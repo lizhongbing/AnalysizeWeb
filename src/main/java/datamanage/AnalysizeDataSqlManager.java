@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.proweb.common.file.MyLog;
 import com.proweb.job.libObject;
 import com.proweb.mysqlobject.mysqlObject;
 
@@ -40,7 +39,6 @@ public class AnalysizeDataSqlManager {
 	 */
 	public static void addDataToQueue(HashMap<String,ArrayList<libObject>> data,String taskid){
 		if(!idList.contains(taskid)){
-			MyLog.AddLog("trace_pegging.log", "trace_pegging === 将缓存获取数据添加到队列");
 			queue.offer(data);
 			idList.add(taskid);
 		}
@@ -106,8 +104,6 @@ public class AnalysizeDataSqlManager {
 	 * @param value
 	 */
 	private static void insertTracePegging(ArrayList<libObject> value) {
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 插入轨迹反查数据");
-
 		for (libObject obj : value) {
 			task_tracepegging_lib bean = (task_tracepegging_lib)obj;
 			int taskid = Integer.valueOf(bean.getTaskid());
@@ -117,7 +113,6 @@ public class AnalysizeDataSqlManager {
 			int stime = Integer.valueOf(bean.getStime());
 			int etime = Integer.valueOf(bean.getEtime());
 			String sql = "insert into trace_pegging(taskid,mac,nums,svc,stime,etime) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime +")";
-			MyLog.AddLog("trace_pegging.log", "insert trace_pegging sql===" + sql);
 			mysqlObject sqlObj = new mysqlObject();
 			sqlObj.clearObject();
 			mysqlObject.ExeSql(sql);

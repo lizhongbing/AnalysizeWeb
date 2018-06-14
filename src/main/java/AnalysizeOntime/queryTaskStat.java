@@ -22,7 +22,7 @@ public class queryTaskStat  extends baseServlet {
     static String status="2";
 	@Override
 	public String handle() {
-		MyLog.AddLog("actual_data_analyzer.log", "开始接收查询状态============="+System.currentTimeMillis());
+		MyLog.AddLog("actual_data_analyzer.log", "step === start handle querystatus ==="+System.currentTimeMillis());
 		taskid=getObject("taskid");
 		ENDRESULT="{\"status\":\"2\",\"taskid\":\""+taskid+"\"}";
 		if(init()) ENDRESULT=getStatus();		
@@ -43,7 +43,7 @@ public class queryTaskStat  extends baseServlet {
 			 str=tmp.replace("\"status\":","").replace("\"","").replace(":[{","").replace("}]}","");
 		}
 		String returnstr="{\"status\":\""+str+"\",\"taskid\":\""+taskid+"\"}";
-		MyLog.AddLog("actual_data_analyzer.log", "完成处理查询状态======"+str+"======="+System.currentTimeMillis());
+		MyLog.AddLog("actual_data_analyzer.log", "over handle querystatus======"+str+"======="+System.currentTimeMillis());
 		return returnstr;
 	}
 	

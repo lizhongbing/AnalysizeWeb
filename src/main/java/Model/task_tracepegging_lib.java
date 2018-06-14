@@ -16,7 +16,7 @@ public class task_tracepegging_lib extends libObject{
 	
 	@Override
 	public boolean addRec(String recs) {
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 获取的分析数据结果 libObject === " + recs);
+		MyLog.AddLog("actual_data_analyzer.log", "step === add data to libObject === recs ===" + recs);
 		String[] strlist=recs.split(TASK_DEFINITION.task_jobname_cutmark);
 		if(strlist.length!=6)return false;
 		taskid=strlist[0];

@@ -62,6 +62,7 @@ public class queryTaskresult extends baseServlet {
 	}
 	
 	public static String getResult(){
+		MyLog.AddLog("actual_data_analyzer.log", "step===start to getResult===time===" + System.currentTimeMillis()+"===taskid===" + taskid);
 		String str=ENDRESULT;
 		ConnectToDatabase.connect();
 		mysqlObject sqlobj=new mysqlObject();
@@ -79,7 +80,7 @@ public class queryTaskresult extends baseServlet {
 		}
 		else res=str;
 		str="{\"total\":\""+total+"\",\"data\":["+res+"]}";
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 最后返回的结果数据 === " + str);
+		MyLog.AddLog("actual_data_analyzer.log", "step===end to getResult===time==="+ System.currentTimeMillis() +"===result===" + str);
 		return str;
 	}
 	
@@ -114,11 +115,11 @@ public class queryTaskresult extends baseServlet {
 	}
 	
 	private static String getTraceFromCache(String tablename,int pageno, int limit) {
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 从本地缓存获取数据");
+		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromCache");
 		String data = null;
 		HashMap<String, ArrayList<libObject>> hashMap = AnalysizeDataCache.getJobByTaskid(taskid);
 		if(hashMap == null){
-			MyLog.AddLog("trace_pegging.log", "trace_pegging === 本地缓存没有数据");
+			MyLog.AddLog("actual_data_analyzer.log", "step===no trace_pegging data in cache");
 			AnalysizeDataSqlManager.removeTaskIdFromList(taskid);
 		}else{
 			AnalysizeDataSqlManager.addDataToQueue(hashMap,taskid);
@@ -157,13 +158,12 @@ public class queryTaskresult extends baseServlet {
 	    String temp = json.split("\"rows\":")[1];
 	    //返回格式{}，{}，{}
 	    String result = temp.substring(1,temp.indexOf("]")).replace("svc","servicecode");
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 从本地缓存获取数据 result=== " + result);
-
+		MyLog.AddLog("actual_data_analyzer.log", "step===trace_pegging data in cache===" + result);
 		return result;
 	}
 
 	private static String getTraceFromDB(mysqlObject sqlobj, String tablename,int pageno,int limit) {
-		MyLog.AddLog("trace_pegging.log", "trace_pegging === 从数据库获取数据");
+		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromDB");
 		String res="";
 		String sqlMac = mac.length() > 0 ? " and  mac=\""+mac+"\"" : "";
 		String countSql="select count(*) as count from "+tablename+" where taskid=" + TASKID + sqlMac;
