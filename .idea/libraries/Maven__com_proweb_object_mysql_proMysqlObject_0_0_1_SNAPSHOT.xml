@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.proweb.object.mysql:proMysqlObject:0.0.1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/proweb/object/mysql/proMysqlObject/0.0.1-SNAPSHOT/proMysqlObject-0.0.1-20180306.090550-3.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/proweb/object/mysql/proMysqlObject/0.0.1-SNAPSHOT/proMysqlObject-0.0.1-20180306.090550-3-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/proweb/object/mysql/proMysqlObject/0.0.1-SNAPSHOT/proMysqlObject-0.0.1-20180306.090550-3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

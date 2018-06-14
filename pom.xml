@@ -1,0 +1,124 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.xwc</groupId>
+  <artifactId>AnalysizeWeb</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>AnalysizeWeb Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <encoding>UTF-8</encoding>
+        <spark.version>1.6.0</spark.version>
+        <hadoop.version>2.6.3</hadoop.version>
+        <jedis.version>2.7.2</jedis.version>
+        <scala.minor.version>2.10</scala.minor.version>
+        <elasticsearch.version>2.4.3</elasticsearch.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>servlet-api</artifactId>
+          <groupId>javax.servlet</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- Spark Core -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_2.10</artifactId>
+      <version>${spark.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- Spark SQL -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_2.10</artifactId>
+      <version>${spark.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- Spark HIVE -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_2.10</artifactId>
+      <version>${spark.version}</version>
+      <scope>compile</scope>
+    </dependency>
+	  <dependency>
+	      <groupId>com.proweb.object.mysql</groupId>
+	      <artifactId>proMysqlObject</artifactId>
+	      <version>0.0.1-SNAPSHOT</version>
+	   <exclusions>
+        <exclusion>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>servlet-api</artifactId>
+          <groupId>javax.servlet</groupId>
+        </exclusion>
+      </exclusions>
+	  </dependency>   
+	<dependency>
+		<groupId>com.proweb.common</groupId>
+  		<artifactId>procommon</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>  
+	<dependency>
+	    <groupId>mysql</groupId>
+	    <artifactId>mysql-connector-java</artifactId>
+	    <version>5.1.46</version>
+	</dependency>	
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>listener</scope>
+    </dependency>
+    <dependency>
+         <groupId>net.sf.json-lib</groupId>
+         <artifactId>json-lib</artifactId>
+         <version>2.4</version>
+         <classifier>jdk15</classifier>
+    </dependency>
+    
+  
+     
+     <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>${jedis.version}</version>
+        <type>jar</type>
+        <scope>compile</scope>
+    </dependency>
+    
+    <dependency>
+	    <groupId>com.alibaba</groupId>
+	    <artifactId>fastjson</artifactId>
+	    <version>1.2.47</version>
+	</dependency>
+
+
+  </dependencies>
+  <build>
+      <finalName>AnalysizeWeb</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
