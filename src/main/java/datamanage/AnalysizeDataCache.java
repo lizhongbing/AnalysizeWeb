@@ -3,8 +3,12 @@ package datamanage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import com.proweb.job.libObject;
+
+import probd.hbase.common.MyLog;
 
 /**
  * @author lizb
@@ -36,11 +40,38 @@ public class AnalysizeDataCache {
 	 */
 	public static HashMap<String,ArrayList<libObject>> getJobByTaskid(String taskid) {
 		if(!hashMap.containsKey(taskid)){
+			MyLog.AddLog("actual_data_analyzer.log", "step===no data in cache taskid==="+taskid);
 			return null;
 		}
 		HashMap<String, ArrayList<libObject>> result = hashMap.get(taskid);
 		
 		return result;
+	}
+	
+	/**
+	 * 根据taskid和tableName获取对应表的缓存的数据
+	 * @param taskid
+	 * @param tableName
+	 * @return
+	 */
+	public static ArrayList<libObject> getDataByTaskidAndTableName(String taskid,String tableName){
+		ArrayList<libObject> list = null;
+		HashMap<String, ArrayList<libObject>> hashMap = getJobByTaskid(taskid);
+		if(hashMap == null){
+			AnalysizeDataSqlManager.removeTaskIdFromList(taskid);
+		}else{
+			AnalysizeDataSqlManager.addDataToQueue(hashMap,taskid);
+			Set<Entry<String,ArrayList<libObject>>> entrySet = hashMap.entrySet();
+			for (Entry<String, ArrayList<libObject>> entry : entrySet) {
+				String tableNameString = entry.getKey();
+				ArrayList<libObject> value = entry.getValue();
+				if(tableNameString.equals(tableName)){
+					list = value;
+					break;
+				}
+			}
+		}
+		return list;
 	}
 	
 	

@@ -72,7 +72,7 @@ public class TASK_DEFINITION {
 	public static String 	tablename_taskname="taskname";
 	public static String 	tablename_actual_taskname="actual_taskname";
 	public static String 	tablename_taskresult="taskresult";
-	public static String 	tablename_spacetime="spacetime";
+	public static String 	tablename_spacetime="SpaceTime";
 	public static String 	tablename_trace_pegging="trace_pegging";
 
 

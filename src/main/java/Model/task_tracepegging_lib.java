@@ -6,17 +6,17 @@ import Common.TASK_DEFINITION;
 import probd.hbase.common.MyLog;
 public class task_tracepegging_lib extends libObject{
 	
-	public String taskid;
-	public String mac;
-	public String nums;
-	public String svc;
-	public String stime;
-	public String etime;
+	private String taskid;
+	private String mac;
+	private String nums;
+	private String svc;
+	private String stime;
+	private String etime;
 	
 	
 	@Override
 	public boolean addRec(String recs) {
-		MyLog.AddLog("actual_data_analyzer.log", "step === add data to libObject === recs ===" + recs);
+		MyLog.AddLog("actual_data_analyzer.log", "step === add data to task_tracepegging_lib === recs ===" + recs);
 		String[] strlist=recs.split(TASK_DEFINITION.task_jobname_cutmark);
 		if(strlist.length!=6)return false;
 		taskid=strlist[0];

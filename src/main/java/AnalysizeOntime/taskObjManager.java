@@ -17,6 +17,7 @@ import Model.task_fellow_ad_lib;
 import Model.task_fellow_lib;
 import Model.task_permanent_ad_lib;
 import Model.task_permanent_lib;
+import Model.task_spacetime_lib;
 import Model.task_tasklog_lib;
 import Model.task_taskresult_lib;
 import Model.task_temp_mac_lib;
@@ -28,7 +29,7 @@ public class taskObjManager extends objManager{
 	@Override
 	public libObject getObject(String objname) {
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_viptrace))       return new task_vip_trace_lib();
-		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_vipsvc))   	   return new task_vip_svc_lib();
+		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_vipsvc))   	   	  return new task_vip_svc_lib();
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.task_danger_jobname))      return new task_danger_result_lib();
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_permanent))      return new task_permanent_lib();
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_permanent_ad))   return new task_permanent_ad_lib();
@@ -41,6 +42,7 @@ public class taskObjManager extends objManager{
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_temp_mac))       return new task_temp_mac_lib();
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_taskresult))     return new task_taskresult_lib();
 		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_trace_pegging))  return new task_tracepegging_lib();
+		if(objname.equalsIgnoreCase(TASK_DEFINITION.tablename_spacetime))      return new task_spacetime_lib();
 		return null;
 	}
 	

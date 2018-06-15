@@ -10,6 +10,7 @@ import com.proweb.job.libObject;
 import com.proweb.mysqlobject.mysqlObject;
 
 import Common.ConnectToDatabase;
+import Model.task_spacetime_lib;
 import Model.task_tracepegging_lib;
 
 /**
@@ -93,11 +94,35 @@ public class AnalysizeDataSqlManager {
 		case "trace_pegging":
 			insertTracePegging(value);
 			break;
-			//TODO 
+		case "SpaceTime":
+			insertSpaceTime(value);
+			break;
 		default:
 			break;
 		}
 	}
+
+	/**
+	 * 插入时空碰撞
+	 * @param value
+	 */
+	private static void insertSpaceTime(ArrayList<libObject> value) {
+		for (libObject obj : value) {
+			task_spacetime_lib bean = (task_spacetime_lib)obj;
+			int taskid = Integer.valueOf(bean.getTaskid());
+			String mac = bean.getMac();
+			int nums = Integer.valueOf(bean.getNums());
+			String svc = bean.getSvc();
+			int stime = Integer.valueOf(bean.getStime());
+			int etime = Integer.valueOf(bean.getEtime());
+			String lables = bean.getLables();
+			String sql = "insert into SpaceTime(taskid,mac,nums,svc,stime,etime,lables) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime+","+"\""+lables+"\""+")";
+			mysqlObject sqlObj = new mysqlObject();
+			sqlObj.clearObject();
+			mysqlObject.ExeSql(sql);
+		}
+	}
+
 
 	/**
 	 * 插入轨迹反查

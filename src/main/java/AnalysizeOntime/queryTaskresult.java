@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.proweb.job.libObject;
@@ -23,9 +23,9 @@ import Common.TASK_DEFINITION;
 import Common.Table_Task;
 import Common.Task_result_Judge_new;
 import Common.TimeDate;
+import Model.task_spacetime_lib;
 import Model.task_tracepegging_lib;
 import datamanage.AnalysizeDataCache;
-import datamanage.AnalysizeDataSqlManager;
 import jsonparse.QueryJsonParse;
 import probd.hbase.common.MyLog;
 import servlet.baseServlet;
@@ -69,10 +69,13 @@ public class queryTaskresult extends baseServlet {
 		if(pageno>0) pageno=pageno-1;
 		String tasktype=Table_Task.getActual_Tasktype_by_taskid(sqlobj,taskid);
 		tablename=Table_Task.getActual_taskname_by_tasktype(tasktype);
-		if(type.contains("result")) str=getTotalCountNums(sqlobj);
-		if(type.contains("mac"))  str=getMaclist_pagelimit(sqlobj,tablename,"nums",pageno,pagesize); 
+		
+		
+		if(type.contains("result")) str=getTotalCountNums();
+		if(type.contains("mac"))  str=getMaclist_pagelimit(tablename,"nums",pageno,pagesize); 
 		if(type.contains("trace")) str=getTrace_pagelimit(sqlobj,tablename,pageno,pagesize);		
 				
+		
 		String res="";
 		if(type.contains("result")) {
 			str=str.replace("},{","}={");
@@ -114,29 +117,53 @@ public class queryTaskresult extends baseServlet {
 		return data;
 	}
 	
+	/**
+	 * 从本地缓存中获取Trace
+	 */
 	private static String getTraceFromCache(String tablename,int pageno, int limit) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromCache");
 		String data = null;
-		HashMap<String, ArrayList<libObject>> hashMap = AnalysizeDataCache.getJobByTaskid(taskid);
-		if(hashMap == null){
-			MyLog.AddLog("actual_data_analyzer.log", "step===no trace_pegging data in cache");
-			AnalysizeDataSqlManager.removeTaskIdFromList(taskid);
-		}else{
-			AnalysizeDataSqlManager.addDataToQueue(hashMap,taskid);
-			Set<Entry<String,ArrayList<libObject>>> entrySet = hashMap.entrySet();
-			for (Entry<String, ArrayList<libObject>> entry : entrySet) {
-				String tableNameString = entry.getKey();
-				ArrayList<libObject> value = entry.getValue();
-				if(tableNameString.equals(tablename)){
-					data = getTraceData(value,pageno,limit);
-					break;
-				}
-			}
+		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
+		if(list != null){
+			data = getTraceData(tablename,list,pageno,limit);
 		}
 		return data;
 	}
 
-	private static String getTraceData(ArrayList<libObject> value,int pageno, int limit) {
+	private static String getTraceData(String tableName,ArrayList<libObject> list,int pageno, int limit) {
+		String data = null;
+		switch (tableName) {
+		case "trace_pegging":
+			data = getTraceFromTracePegging(list,pageno,limit);
+			break;
+		case "SpaceTime":
+			data = getTraceFromSpaceTime(list,pageno,limit);
+			break;
+		default:
+			break;
+		}
+		return data;
+	}
+
+	private static String getTraceFromSpaceTime(ArrayList<libObject> value,int pageno, int limit) {
+		//计算total
+		total = value.size();
+		if(mac.length() > 0){
+			int count = 0;
+			for (libObject obj : value) {
+				task_spacetime_lib bean = (task_spacetime_lib)obj;
+				if(mac.equals(bean.getMac())){
+					count++;
+				}
+			}
+			total = count;
+		}
+		
+		String result = getResultFromList(value,pageno,limit);
+		return result;
+	}
+
+	private static String getTraceFromTracePegging(ArrayList<libObject> value,int pageno, int limit) {
 		//计算total
 		total = value.size();
 		if(mac.length() > 0){
@@ -150,7 +177,14 @@ public class queryTaskresult extends baseServlet {
 			total = count;
 		}
 		
-		//分页数据
+		String result = getResultFromList(value,pageno,limit);
+		return result;
+	}
+
+	/**
+	 * 获取分页数据
+	 */
+	private static String getResultFromList(ArrayList<libObject> value,int pageno, int limit) {
 		List<libObject> resultList = value.subList(pageno*limit, pageno*limit + limit);
 		QueryJsonParse<libObject> parse = new QueryJsonParse<libObject>();
 		parse.setRows(resultList);
@@ -161,7 +195,10 @@ public class queryTaskresult extends baseServlet {
 		MyLog.AddLog("actual_data_analyzer.log", "step===trace_pegging data in cache===" + result);
 		return result;
 	}
-
+	
+	/**
+	 * 从数据库中获取Trace
+	 */
 	private static String getTraceFromDB(mysqlObject sqlobj, String tablename,int pageno,int limit) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromDB");
 		String res="";
@@ -250,9 +287,61 @@ public class queryTaskresult extends baseServlet {
 	/**
 	 * 分页获取Mac列表
 	 */
-	private static String getMaclist_pagelimit(mysqlObject sqlobj,String tablename,String columnname,int pageno,int pagesize) {
+	private static String getMaclist_pagelimit(String tablename,String columnname,int pageno,int pagesize) {
+		//从本地缓存中获取，如果没有，则从数据库中获取
+		String result = getMacFromCache(tablename,columnname,pageno,pagesize);
+		if(result == null){
+			result = getMacFromDB(tablename,columnname,pageno,pagesize);
+		}
+		return result;
+	}
+	
+	private static String getMacFromCache(String tableName,String columnname,int pageno,int pagesize) {
+		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromCache");
+		String data = null;
+		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tableName);
+		if(list != null){
+			data = getMacData(tableName,columnname,pageno,pagesize,list);
+		}
+		return data;
+	}
+	
+	
+	private static String getMacData(String tableName,String columnname,int pageno,int pagesize, ArrayList<libObject> list) {
+		String data = "";
+		switch (tableName) {
+		case "trace_pegging":
+			data = getMacFromTracePegging(list,columnname,pageno,pagesize);
+			break;
+		case "SpaceTime":
+			data = getMacFromSpaceTime(list,columnname,pageno,pagesize);
+			break;
+		default:
+			break;
+		}
+		return data;
+	}
+
+	private static String getMacFromSpaceTime(ArrayList<libObject> list, String columnname, int pageno2,
+			int pagesize2) {
+		// TODO Auto-generated method stub
+		// String countsql="select count(distinct(mac)) as count from "+tablename+" where  taskid="+TASKID+" and "+columnname+" ="+ConditionNum;
+
+		return null;
+	}
+
+	private static String getMacFromTracePegging(ArrayList<libObject> list, String columnname, int pageno2,
+			int pagesize2) {
+		// TODO Auto-generated method stub
+		// String countsql="select count(distinct(mac)) as count from "+tablename+" where  taskid="+TASKID+" and "+columnname+" ="+ConditionNum;
+
+		return null;
+	}
+
+	private static String getMacFromDB(String tablename,String columnname,int pageno,int pagesize) {
 		String str="";
 		String datastr="";
+		mysqlObject sqlobj = new mysqlObject();
 		List<String> maclist=new ArrayList<String>();
 		if(mac==null||mac.length()==0){
 			sqlobj.clearObject();
@@ -302,8 +391,8 @@ public class queryTaskresult extends baseServlet {
 		}		
 		return str;
 	}
-	
-	
+
+
 	/**
 	 * 根据taskid获取单个mac的碰撞次数或采集次数
 	 */
@@ -321,17 +410,115 @@ public class queryTaskresult extends baseServlet {
 		return str;
 	}
 	
+	
 	/**
 	 * 获取碰撞或采集信息
 	 */
-	public static String getTotalCountNums(mysqlObject sqlobj){		
+	public static String getTotalCountNums(){
+		//从本地缓存中获取，如果没有，则从数据库中获取
+		String result = getTotalCountNumsFromCache();
+		if(result == null){
+			result = getTotalCountNumsFromDB();
+		}
+		return result;
+	}
+	
+	private static String getTotalCountNumsFromCache() {
+		MyLog.AddLog("actual_data_analyzer.log", "step===getTotalCountNumsFromCache");
+		String data = null;
+		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
+		if(list != null){
+			data = getTotalCountNumsData(tablename,list);
+		}
+		return data;
+	}
+
+	private static String getTotalCountNumsData(String tableName,ArrayList<libObject> list) {
+		String data = "";
+		switch (tableName) {
+		case "trace_pegging":
+			data = getNumsDataFromTracePegging(list);
+			break;
+		case "SpaceTime":
+			data = getNumsDataFromSpaceTime(list);
+			break;
+		default:
+			break;
+		}
+		return data;
+	}
+
+	private static String getNumsDataFromSpaceTime(ArrayList<libObject> list) {
+		String result = "";
+		//获取去重的nums
+		List<Integer> numsList = new ArrayList<Integer>();
+		for (libObject obj : list) {
+			task_spacetime_lib bean = (task_spacetime_lib)obj;
+			String nums = bean.getNums();
+			if(StringUtils.isNotEmpty(nums) && !numsList.contains(nums)){
+				numsList.add(Integer.valueOf(nums));
+			}
+		}
+		if(numsList.size() == 0)return result;
+		Collections.sort(numsList);//自然正序
+		
+		//获取nums对应的去重的mac数
+		for (Integer num : numsList) {
+			ArrayList<String> macList = new ArrayList<String>();
+			for (libObject obj : list) {
+				task_spacetime_lib bean = (task_spacetime_lib)obj;
+				String beanNum = bean.getNums();
+				String mac = bean.getMac();
+				if(String.valueOf(num).equals(beanNum) && !macList.contains(mac)){
+					macList.add(mac);
+				}
+			}
+			result += "{\"conditionnum\":\""+num+"\",\"countnum\":\""+macList.size()+"\",\"lablenum\":\"0\",\"falsemacnum\":\"0\",\"taskid\":\""+taskid+"\"},";			
+		}
+		total=numsList.size();
+		return result;
+	}
+
+	private static String getNumsDataFromTracePegging(ArrayList<libObject> list) {
+		String result = "";
+		//获取去重的nums
+		List<Integer> numsList = new ArrayList<Integer>();
+		for (libObject obj : list) {
+			task_tracepegging_lib bean = (task_tracepegging_lib)obj;
+			String nums = bean.getNums();
+			if(StringUtils.isNotEmpty(nums) && !numsList.contains(nums)){
+				numsList.add(Integer.valueOf(nums));
+			}
+		}
+		if(numsList.size() == 0)return result;
+		Collections.sort(numsList);//自然正序
+		
+		//获取nums对应的去重的mac数
+		for (Integer num : numsList) {
+			ArrayList<String> macList = new ArrayList<String>();
+			for (libObject obj : list) {
+				task_tracepegging_lib bean = (task_tracepegging_lib)obj;
+				String beanNum = bean.getNums();
+				String mac = bean.getMac();
+				if(String.valueOf(num).equals(beanNum) && !macList.contains(mac)){
+					macList.add(mac);
+				}
+			}
+			result += "{\"conditionnum\":\""+num+"\",\"countnum\":\""+macList.size()+"\",\"lablenum\":\"0\",\"falsemacnum\":\"0\",\"taskid\":\""+taskid+"\"},";			
+		}
+		total=numsList.size();
+		return result;
+	}
+
+	private static String getTotalCountNumsFromDB() {
 		String datastr="";
+		mysqlObject sqlobj = new mysqlObject();
 		int[] numslit=getDistinctCountNums(sqlobj);
 		if(numslit==null||numslit.length==0) return datastr;
 	    for(int i=0;i<numslit.length;i++){
-	    	sqlobj.clearObject();
-	    	String nums=String.valueOf(numslit[i]);
-	    	String sql="select count(distinct(mac)) as count from "+tablename+" where taskid="+TASKID+" and nums="+nums;
+	    		sqlobj.clearObject();
+	    		String nums=String.valueOf(numslit[i]);
+	    		String sql="select count(distinct(mac)) as count from "+tablename+" where taskid="+TASKID+" and nums="+nums;
 			System.out.println(sql);
 			List<mysqlRow>	rows=sqlobj.ExeSqlQuery(sql);
 			if(rows.size()>0){
@@ -345,7 +532,7 @@ public class queryTaskresult extends baseServlet {
 		total=numslit.length;
 		return datastr;
 	}
-	
+
 	/**
 	 * 获取去重碰撞次数或者采集次数，返回List
 	 */
