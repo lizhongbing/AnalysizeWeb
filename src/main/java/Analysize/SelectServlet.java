@@ -16,25 +16,22 @@ import servlet.baseServlet;
 
 public class SelectServlet extends baseServlet{
 	
-	     static long start_runtime=0;
-		 static String taskname=null;
-		 static String tasktype=null;		
-		 static String status=null;	
-	     static String limit=null;
-	     static String page=null;
-		 static long  pagesize=10;
-		 static long  pageno=0;	 
-		 static String user=null;
-		 static String  totalnums=null;	  
-		 static int  totals=0;	 
-		 static String ENDRESULT=null;
-		 static String limitstr=null;
-		 static boolean isLocal=true;
-		 static boolean local0_server1=true;
-		 static String head_taskdesc=null;
-		 static String taskid=null;
-		 static int TASKID=0;
-		 static long end_runtime=0;
+	private long start_runtime=0;
+	private String tasktype;		
+	private String status;	
+	private String limit;
+	private String page;
+	private long  pagesize=10;
+	private long  pageno=0;	 
+	private String user;
+	private String  totalnums;	  
+	private int  totals=0;	 
+	private String ENDRESULT;
+	private String limitstr;
+	private boolean isLocal;
+	private String taskid;
+	private int TASKID=0;
+	private long end_runtime=0;
 	  
 		//baseServlet实现方法，
 		//基本查询从taskocunt表里面获取数据,(taskcount 每天随taskname，temp_mac表数据自动更新，temp_mac存放每天分析程序产生的Mac，由定时清除程序每天更新)
@@ -44,7 +41,7 @@ public class SelectServlet extends baseServlet{
 			isLocal=isDebug.islocal;
 			taskid=getObject("taskid");
 			user=getObject("user");
-			taskname=getObject("taskname");
+			//taskname=getObject("taskname");
 			tasktype=getObject("tasktype");		
 			status=getObject("status");
 			limit=getObject("limit");
@@ -65,7 +62,7 @@ public class SelectServlet extends baseServlet{
 		
 		
 		//主处理程序
-		public static String Manage() throws NumberFormatException, UnsupportedEncodingException{
+		public String Manage() throws NumberFormatException, UnsupportedEncodingException{
 			//String taskid_str="";
 			String result="";
 			limitstr=init_limitstr();
@@ -79,7 +76,7 @@ public class SelectServlet extends baseServlet{
 		}
 		
 		//ENDRESULT拼接
-	    public static String Product_ENDRESULT(String resultstr){
+	    public String Product_ENDRESULT(String resultstr){
 		    clear_EndResult();
 			String rows_value_str=resultstr;
 		    String beg_ENDRESULT="{\"status\":\""+0+"\",\"pageno\":\""+pageno+"\",\"pgaesize\":\""+pagesize+"\",\"totalrows\":\""+totals+"\",\"rows\":["+rows_value_str+"]}";
@@ -87,7 +84,7 @@ public class SelectServlet extends baseServlet{
 		}
 		
 		//输入taskid字符串，返回结果集
-		public static String GetResult(mysqlObject obj) throws NumberFormatException, UnsupportedEncodingException{
+		public String GetResult(mysqlObject obj) throws NumberFormatException, UnsupportedEncodingException{
 			obj.clearObject();
 			String result="";			
 		    String  sql="select * from taskcount "+limitstr;
@@ -113,7 +110,7 @@ public class SelectServlet extends baseServlet{
 		
 
         //生成limitstr
-        public static String init_limitstr(){
+        public String init_limitstr(){
         	limitstr=" ";
 			limitstr="  where status!=1000  and status!=1 ";
 			if(taskid==null||taskid.isEmpty()) taskid="0";
@@ -132,7 +129,7 @@ public class SelectServlet extends baseServlet{
 		}
 		
         //求总数
-        public static void getTotals(mysqlObject obj){
+        public void getTotals(mysqlObject obj){
 			obj.clearObject();
 			if(totalnums.equals("0")||totalnums==null||totalnums.isEmpty()){
 				List<mysqlRow> rows = obj.ExeSqlQuery("select count(*) as count from taskcount "+limitstr);
@@ -144,7 +141,7 @@ public class SelectServlet extends baseServlet{
 		}
 		
         //清除ENDRESULT
-        public static void clear_EndResult(){
+        public void clear_EndResult(){
 			 ENDRESULT=null;		
 		}
 		

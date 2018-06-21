@@ -12,6 +12,7 @@ import com.proweb.mysqlobject.mysqlObject;
 import Common.ConnectToDatabase;
 import Model.task_spacetime_lib;
 import Model.task_tracepegging_lib;
+import probd.hbase.common.MyLog;
 
 /**
  * @author lizb
@@ -21,9 +22,9 @@ import Model.task_tracepegging_lib;
 public class AnalysizeDataSqlManager {
 	
 	/**需要插入到数据库的数据队列，线程安全*/
-	private static ConcurrentLinkedQueue<HashMap<String,ArrayList<libObject>>> queue = new ConcurrentLinkedQueue<HashMap<String,ArrayList<libObject>>>();
+	private static final ConcurrentLinkedQueue<HashMap<String,ArrayList<libObject>>> queue = new ConcurrentLinkedQueue<HashMap<String,ArrayList<libObject>>>();
 	/**保证不会重复向数据库里插入taskid相同的任务数据*/
-	private static ArrayList<String> idList = new ArrayList<String>();
+	private static final ArrayList<String> idList = new ArrayList<String>();
 	
 	/**
 	 * 将队列提供出去
@@ -117,6 +118,7 @@ public class AnalysizeDataSqlManager {
 			int etime = Integer.valueOf(bean.getEtime());
 			String lables = bean.getLables();
 			String sql = "insert into SpaceTime(taskid,mac,nums,svc,stime,etime,lables) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime+","+"\""+lables+"\""+")";
+			MyLog.AddLog("cache_to_mysql.log", "SpaceTime sql===" + sql);
 			mysqlObject sqlObj = new mysqlObject();
 			sqlObj.clearObject();
 			mysqlObject.ExeSql(sql);
@@ -138,6 +140,7 @@ public class AnalysizeDataSqlManager {
 			int stime = Integer.valueOf(bean.getStime());
 			int etime = Integer.valueOf(bean.getEtime());
 			String sql = "insert into trace_pegging(taskid,mac,nums,svc,stime,etime) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime +")";
+			MyLog.AddLog("cache_to_mysql.log", "trace_pegging sql===" + sql);
 			mysqlObject sqlObj = new mysqlObject();
 			sqlObj.clearObject();
 			mysqlObject.ExeSql(sql);

@@ -16,23 +16,19 @@ import servlet.baseServlet;
 
 public  class ModifyServlet extends baseServlet {
 	 
-	 static boolean islocal=true;
-	 static String[] database_paras=new String[4];	
-	 static String taskid;
-	 static String name;
-	 static String tasktype;
-	 static String taskdesc;
-	 static String lable;
-	 static String taskmd5=null;		
-	 static String userid;
-	 static long timeval;
-	 static String content;
-	 static String status;
-	 static int TASKTYPE=0;
-	 static int STATUS=0;
-	 static int USERID=0;
-	 static int TASKID=0;
-	 static String ENDRESULT;
+	private boolean islocal=true;
+	private String taskid;
+	private String name;
+	private String tasktype;
+	private String taskdesc;
+	private String lable;
+	private String taskmd5;		
+	private String userid;
+	private String content;
+	private int TASKTYPE=0;
+	private int USERID=0;
+	private int TASKID=0;
+	private String ENDRESULT;
 	@Override
 	public String handle() {	
 		islocal=isDebug.islocal;
@@ -51,8 +47,7 @@ public  class ModifyServlet extends baseServlet {
 	}
 	
 	
-	//主程序
-	public static String update(){
+	public String update(){
 		 String result="{\"status\":\"1\"}";
 		 if(init()){
 			 TASKID=Integer.parseInt(taskid);
@@ -76,8 +71,7 @@ public  class ModifyServlet extends baseServlet {
 		 return result;
 	}
 
-	//参数处理
-	public static Boolean init(){
+	public Boolean init(){
 		if(!TimeDate.isnum(taskid)||(Integer.parseInt(taskid)<1)) return false;
 		if(taskdesc==null||taskdesc.isEmpty()) return false;
 		if(taskmd5==null||taskmd5.isEmpty()) return false;

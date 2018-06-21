@@ -1,10 +1,8 @@
 package Analysize;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import com.proweb.common.timeop;
 import com.proweb.common.file.MyLog;
 import com.proweb.mysqlobject.mysqlObject;
 import com.proweb.mysqlobject.mysqlObject.mysqlRow;
@@ -16,30 +14,24 @@ import servlet.baseServlet;
 
 public class SelectMacresult extends baseServlet {
 	
-	static String attr=null;
-	static String taskid=null;
-	static String time_rang=null;
-	static String mac=null;
-	static int pageno=0;
-	static int pagesize=10;
-	static String limit=null;
-	static String page=null;
-	static String totalnums="0";
-	static int totals=0;
-	static String nowday=timeop.getDayFromTime(timeop.GetCurrentTime()).replace("-","");	
-	static int begday=0;
-	static int endday=0;	
-	static String ENDRESULT=null;
-	static String limitstr=null;
-	static int TOTALS=0;
-	static String teststr=null;
-	static long begin_st=0;
+	private String taskid;
+	private String time_rang;
+	private int pageno=0;
+	private int pagesize=10;
+	private String limit;
+	private String page;
+	private String totalnums="0";
+	private int totals=0;
+	//private String nowday=timeop.getDayFromTime(timeop.GetCurrentTime()).replace("-","");	
+	private String ENDRESULT;
+	private long begin_st=0;
+	
 	@Override
 	public String handle() {
 		begin_st=System.currentTimeMillis()/1000;
 		taskid=getObject("taskid");
 		time_rang=getObject("time_rang");	
-		mac=getObject("mac");
+		//mac=getObject("mac");
 		limit=getObject("limit");
 		page=getObject("page");
 		totalnums=getObject("totalnums");	
@@ -47,8 +39,7 @@ public class SelectMacresult extends baseServlet {
 		return ENDRESULT;
 	}
 
-	//主处理函数
-	 public static String Manage(){
+	 public String Manage(){
 		String  result="{\"status\":\"0\",\"pageno\":\""+pageno+"\",\"pagesize\":"+"\""+pagesize+"\",\"totalnums\":\""+0+"\",\"time_rang\":\""+time_rang+"\",\"taskid\":\""+taskid+"\",\"data\":[]}";
 		if(init_paras()){	
 			init_limitstr();
@@ -72,7 +63,7 @@ public class SelectMacresult extends baseServlet {
 	/**
 	 * 根据taskid获取该taskid下面所有mac
 	 * */
-	public static String get_allMac_by_taskid(mysqlObject obj){
+	public String get_allMac_by_taskid(mysqlObject obj){
 		long st=System.currentTimeMillis()/1000;
 		obj.clearObject();
 		String macstr=null;
@@ -83,7 +74,7 @@ public class SelectMacresult extends baseServlet {
 	
 	
 	//获取最近一次运行周期的Mac
-	public static String getMac_nearly(int taskid,mysqlObject obj){
+	public String getMac_nearly(int taskid,mysqlObject obj){
 		String result="";
 		String sql="";
 		sql="select distinct(mac) from temp_mac where taskid="+taskid+" limit "+pageno*pagesize+","+pagesize;
@@ -101,7 +92,7 @@ public class SelectMacresult extends baseServlet {
 	
 
 	//求总数
- 	public static void countsum(mysqlObject obj){
+ 	public void countsum(mysqlObject obj){
  		long st=System.currentTimeMillis()/1000;
  		String sql="";
  		if(totalnums.equals("0")||totalnums.equals("")||totalnums==null||totalnums.isEmpty()){
@@ -120,36 +111,36 @@ public class SelectMacresult extends baseServlet {
 	}
 
  	//参数输入判断，只做判断，不做处理
- 	public static boolean init_paras(){
+ 	public boolean init_paras(){
  		if(TimeDate.isnum(taskid)) return true; 	
  		return false;
  	}
  	
  	//清空ENDRESULT
-	public static void clear_EndResult(){		
+	public void clear_EndResult(){		
 		ENDRESULT=null;		
 	}
  		
 	//生成limitstr
-	public static void init_limitstr(){
-		limitstr="";
+	public void init_limitstr(){
+		//limitstr="";
 		//long begno=0;
 		//long endno=0;
 		Calendar   cal   =   Calendar.getInstance();
 		cal.add(Calendar.DATE,   -1);
-		String yesterday = new SimpleDateFormat( "yyyyMMdd").format(cal.getTime());
+		//String yesterday = new SimpleDateFormat( "yyyyMMdd").format(cal.getTime());
 	
 		if(TimeDate.isnum(page)) pageno=Integer.parseInt(page);
 		if(TimeDate.isnum(limit)) pagesize=Integer.parseInt(limit);
 		//begno=pageno*pagesize;
 	
 		if(TimeDate.isNormaltime_rang(time_rang)) {
-			int[] time_arr=TimeDate.getStartday_Endday_by_timerang(time_rang);
-			begday=time_arr[0];
-			endday=time_arr[1];
+			//int[] time_arr=TimeDate.getStartday_Endday_by_timerang(time_rang);
+			//begday=time_arr[0];
+			//endday=time_arr[1];
 		}else{
-			begday=Integer.parseInt(yesterday);
-			endday=Integer.parseInt(nowday);
+			//begday=Integer.parseInt(yesterday);
+			//endday=Integer.parseInt(nowday);
 		}	
 	}
 	

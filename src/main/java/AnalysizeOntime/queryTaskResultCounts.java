@@ -1,6 +1,3 @@
-/**
- * 
- */
 package AnalysizeOntime;
 
 import java.util.List;
@@ -14,12 +11,10 @@ import servlet.baseServlet;
 
 public class queryTaskResultCounts   extends baseServlet {
 	
-	static String[] database_paras=new String[4];	
-	static String taskid=null;	
-    static long TASKID=0;
-    static String result;
-	static int maccount=0;
-    static int total=0;
+	private String taskid;	
+	private String result;
+	private int total;
+	
 	@Override
 	public String handle() {
 		taskid=getObject("taskid");	
@@ -30,7 +25,7 @@ public class queryTaskResultCounts   extends baseServlet {
 		return result;		
 	}
 	
-	public static String getMaccount(){
+	public String getMaccount(){
 		mysqlObject sqlobj=new mysqlObject();;
 		sqlobj.clearObject();
 		int count=0;

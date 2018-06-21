@@ -3,7 +3,6 @@ package Model;
 import com.proweb.job.libObject;
 
 import Common.TASK_DEFINITION;
-import probd.hbase.common.MyLog;
 public class task_spacetime_lib extends libObject{
 	
 	private String taskid;
@@ -17,7 +16,6 @@ public class task_spacetime_lib extends libObject{
 	
 	@Override
 	public boolean addRec(String recs) {
-		MyLog.AddLog("actual_data_analyzer.log", "step === add data to task_spacetime_lib === recs ===" + recs);
 		String[] strlist=recs.split(TASK_DEFINITION.task_jobname_cutmark);
 		if(strlist.length!=7)return false;
 		taskid=strlist[0];
@@ -101,6 +99,33 @@ public class task_spacetime_lib extends libObject{
 	}
 	
 	
+	public String getValueByName(String fieldName){
+		String value = "";
+		switch (fieldName) {
+		case "taskid":
+			value = getTaskid();
+			break;
+		case "mac":
+			value = getMac();
+			break;
+		case "nums":
+			value = getNums();
+			break;
+		case "svc":
+			value = getSvc();
+			break;
+		case "stime":
+			value = getStime();
+			break;
+		case "etime":
+			value = getEtime();
+			break;
+		case "lables":
+			value = getLables();
+			break;
+		}
+		return value;
+	}
 	
 	
 	

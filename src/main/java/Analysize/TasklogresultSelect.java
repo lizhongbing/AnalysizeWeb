@@ -19,29 +19,23 @@ import servlet.baseServlet;
 
 public class TasklogresultSelect extends baseServlet {
 	
-	static String[] paras=new String[4];
-	static String nowday=timeop.getDayFromTime(timeop.GetCurrentTime()).replace("-","");
-	static String yesterday=null;
-    static String taskid=null;
-    static String time_rang=null;
-    static int TASKID=0;	
-    static String limit=null;
-    static String page=null;
-    static String  totalnums=null;
-	static long  pagesize=10;
-    static long  pageno=0;	 	
-    static long totalrows=0;
-    static int  totals=0;	
-    static int begday=0;
-    static int endday=0;
-    static String ENDRESULT=null;
-    static String limitstr=null;
+	private String nowday=timeop.getDayFromTime(timeop.GetCurrentTime()).replace("-","");
+	private String yesterday=null;
+	private String taskid=null;
+	private String time_rang=null;
+	private String limit=null;
+	private String page=null;
+	private long  pagesize=10;
+	private long  pageno=0;	 	
+	private long totalrows=0;
+	private String ENDRESULT=null;
+	
 	@Override
 	public String handle() {
 		taskid=getObject("taskid");
 		limit=getObject("limit");
 		page=getObject("page");		
-		totalnums=getObject("totalnums");
+		//totalnums=getObject("totalnums");
 		time_rang=getObject("time_rang");
 		ConnectToDatabase.connect();	
 		mysqlObject sqlobj= new mysqlObject();		
@@ -55,7 +49,7 @@ public class TasklogresultSelect extends baseServlet {
 	}
 	
 	//参数处理及查询结果数
-	public static String manage(mysqlObject obj) throws ParseException{
+	public String manage(mysqlObject obj) throws ParseException{
         String res="";
         res=get_resultnums_by_taskid(taskid,time_rang,obj);
 		totalrows=res.split("day").length-1;
@@ -73,7 +67,7 @@ public class TasklogresultSelect extends baseServlet {
 	 * 时间范围为空只查询最近的一条记录
 	 * @throws ParseException 
 	 *  */
-    public static String  get_resultnums_by_taskid(String task_id,String time,mysqlObject obj) throws ParseException{
+    public String  get_resultnums_by_taskid(String task_id,String time,mysqlObject obj) throws ParseException{
 		 obj.clearObject();
 		 String res="";
 		 if(TimeDate.isnum(taskid)){
@@ -108,19 +102,17 @@ public class TasklogresultSelect extends baseServlet {
 		return res;
   	} 
     
-    //初始化
-    public static void init(){
-    	Calendar   cal   =   Calendar.getInstance();
+    public void init(){
+    		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE,   -1);
 		yesterday = new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
 		if(TimeDate.isnum(page)) pageno=type_trans.getLong(page);
 		if(TimeDate.isnum(limit)) pagesize=type_trans.getLong(limit);	
 		if(TimeDate.isNormaltime_rang(time_rang)) {
-			int[] time_arr=TimeDate.getStartday_Endday_by_timerang(time_rang);
-			begday=time_arr[0];
-			endday=time_arr[1];
+			//int[] time_arr=TimeDate.getStartday_Endday_by_timerang(time_rang);
+			//begday=time_arr[0];
+			//endday=time_arr[1];
 		}		
-		//long begno=pageno*pagesize;
     }
     
 }

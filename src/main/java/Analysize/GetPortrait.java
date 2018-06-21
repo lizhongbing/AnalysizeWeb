@@ -21,23 +21,21 @@ import servlet.baseServlet;
 
 public class GetPortrait extends baseServlet {
 	
-	static String mac=null;
-	static String lable=null;
-	static String taskid=null;
-	static int TASKID=0;
-	static String ENDRESULT=null;
-	static String limitstr=null;
-	static int pageno=0;
-	static int pagesize=10;
-	static String limit=null;
-	static String page=null;
-	static String totalnums="0";
-	static int totals=10000;
-	static int return_totals=0;
-	static String highrisk_altertime="23:00~5:00";
-	static String work_time="06:30~10:00,16:30~20:30";
-	static String fpgrowth_minConfidence="99%";
-	static String permanent_limitrate ="50%";
+	private String mac;
+	private String lable;
+	private String taskid;
+	private String ENDRESULT;
+	private String limitstr;
+	private int pageno=0;
+	private int pagesize=10;
+	private String limit;
+	private String page;
+	private int totals=10000;
+	private int return_totals=0;
+	private String highrisk_altertime="23:00~5:00";
+	private String work_time="06:30~10:00,16:30~20:30";
+	private String fpgrowth_minConfidence="99%";
+	private String permanent_limitrate ="50%";
 	
 	
 	@Override
@@ -64,8 +62,7 @@ public class GetPortrait extends baseServlet {
 	}
 	
 	
-	//处理程序主入口
-	public static String Manage() throws UnsupportedEncodingException{
+	public String Manage() throws UnsupportedEncodingException{
 		clear_EndResult();
 		String result="";
 		init_limitstr();
@@ -115,7 +112,7 @@ public class GetPortrait extends baseServlet {
     *传入研判结果表，Mac对应的列，taskid，mac,mysqlObject,pagesize,limitstr,totals
     *
     */
-	public static String getJudgeResult_by_taskid_mac(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
+	public String getJudgeResult_by_taskid_mac(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
         String res="";       
 		if(tablename.contains("danger"))  res=danger_judge(tablename,mac_columnname,task_id,mac,obj,pagesize,limitstr,totals);
 		if(tablename.contains("fellow"))  res=fellow_judge(tablename,mac_columnname,task_id,mac,obj,pagesize,limitstr,totals);
@@ -126,7 +123,7 @@ public class GetPortrait extends baseServlet {
 	}
 	
 	/**根据taskid，mac 获取常驻研判依据*/
-	public static String permanent_judge(String tablename,String mac_columnname, int task_id, String mac2, mysqlObject obj,int pagesize2, String limitstr2, int totals2) {
+	public String permanent_judge(String tablename,String mac_columnname, int task_id, String mac2, mysqlObject obj,int pagesize2, String limitstr2, int totals2) {
 		String judge_str="";
 		if(tablename.contains("permanent")){
 			obj.clearObject(); 
@@ -159,7 +156,7 @@ public class GetPortrait extends baseServlet {
 
 
 	/**根据taskid，mac 获取伴随研判依据,*/
-	public static String fellow_judge(String tablename, String mac_columnname,int task_id, String mac2, mysqlObject obj, int pagesize2,String limitstr2, int totals2) {
+	public  String fellow_judge(String tablename, String mac_columnname,int task_id, String mac2, mysqlObject obj, int pagesize2,String limitstr2, int totals2) {
 		String judge_str="";
 		if(tablename.contains("fellow")){
 			 obj.clearObject();
@@ -258,7 +255,7 @@ public class GetPortrait extends baseServlet {
 
 
 	/**根据taskid，mac 获取高危研判依据*/
-	public static  String danger_judge(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
+	public  String danger_judge(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
 		String judge_str="";
 		if(tablename.contains("danger")){
 			String daystr="";
@@ -466,7 +463,7 @@ public class GetPortrait extends baseServlet {
 	
 	
 	/*获取上班族的研判json*/
-	public static String workperson_judge(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
+	public String workperson_judge(String tablename,String mac_columnname,int task_id,String mac,mysqlObject obj,int pagesize, String limitstr, int totals) throws UnsupportedEncodingException {
 		String json="{\"mac\":\"\",\"time\":\"\",\"nums\":\"\"}";
 		if(tablename.contains("work")){
 			int nums=0;
@@ -490,7 +487,7 @@ public class GetPortrait extends baseServlet {
 	
 	
 	/**根据Mac输出所属标签及对应taskid*/
-	public static String Operate_mac_outlable_taskid(mysqlObject obj,String tablename, String mac_columnname){
+	public String Operate_mac_outlable_taskid(mysqlObject obj,String tablename, String mac_columnname){
 		String combinestr="";
 		String info="";
 		limitstr="";
@@ -541,7 +538,7 @@ public class GetPortrait extends baseServlet {
 	
 
 	//lable不为空，mac为空，输出相关Mac及依据
-	public static String Operate_lable(mysqlObject obj){
+	public String Operate_lable(mysqlObject obj){
 		String res="";
 		return_totals=0;
 		return_totals=Task_result_Judge_new.getMacNum_by_lable(lable,obj,"");
@@ -616,7 +613,7 @@ public class GetPortrait extends baseServlet {
 	
 	
 	//根据taskid求taskname所属标签
-	public static String getLable_bytaskid(int taskid,mysqlObject obj){
+	public String getLable_bytaskid(int taskid,mysqlObject obj){
 		obj.clearObject();
 		//String lable="";
 		String sql="select lable from taskname where taskid="+taskid+limitstr;
@@ -634,19 +631,19 @@ public class GetPortrait extends baseServlet {
 	
 	
 	//清空ENDRESULT
-	public static void clear_EndResult(){
+	public void clear_EndResult(){
 		ENDRESULT=null;		
 	}
 	
 	//参数正确性判断,
 	public Boolean init_paras(){
 		if(mac==null||mac.isEmpty())return false;	
-		if(TimeDate.isnum(taskid)) TASKID=Integer.parseInt(taskid);
+		//if(TimeDate.isnum(taskid)) TASKID=Integer.parseInt(taskid);
 		return true;
 	}
 	
 	//生成limitstr
-	public static void init_limitstr(){
+	public void init_limitstr(){
 		limitstr="";		
 		Map<String, String> judge_map=new HashMap<String,String>();
 		//judge_map=ConnectToDatabase.getJudge_paras(isLocal);

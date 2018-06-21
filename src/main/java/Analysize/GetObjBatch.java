@@ -16,19 +16,16 @@ import Common.TimeDate;
 import servlet.baseServlet;
 
 public class GetObjBatch extends baseServlet {
-	static String[] database_paras=new String[4];
-	static String mac=null;
-	static String ENDRESULT=null;
-	static String limitstr=null;
-	static int pageno=0;
-	static int pagesize=10;
-	static String limit=null;
-	static String page="0";
-	static String totalnums="0";
-	static int totals=0;
-	static List<String> maclist=new ArrayList<String>();
-	static Map<String ,String> mac_taskid_map=new HashMap<String ,String>();
-	static Map<String, String> tablemap=new HashMap<String,String>();
+	private String mac;
+	private String ENDRESULT;
+	private int pageno=0;
+	private int pagesize=10;
+	private String limit;
+	private String page="0";
+	private int totals=0;
+	private List<String> maclist=new ArrayList<String>();
+	private Map<String ,String> mac_taskid_map=new HashMap<String ,String>();
+	private Map<String, String> tablemap=new HashMap<String,String>();
 	
 	@Override
 	public String handle() {
@@ -42,7 +39,7 @@ public class GetObjBatch extends baseServlet {
 	/*
 	 * 处理程序主入口
 	 */
-	public static String Manage(){
+	public String Manage(){
 		ENDRESULT="";
 		maclist.clear();
 		mac_taskid_map.clear();
@@ -61,7 +58,7 @@ public class GetObjBatch extends baseServlet {
 	/**
 	 * mac不为空，输出对应taskid
 	 */
-	public static String Operatemac_out_taskid(mysqlObject obj){
+	public String Operatemac_out_taskid(mysqlObject obj){
 		String combinestr="";
 		for(int i=0;i<maclist.size();i++){
 			String inmac=(String) maclist.get(i);
@@ -96,7 +93,7 @@ public class GetObjBatch extends baseServlet {
 	}	
 	
 	//参数处理
-	public static Boolean init_paras(){
+	public Boolean init_paras(){
 		boolean flag=true;
 		if(mac==null||(mac.equals("{}"))||mac.equals("\"\"")||mac.isEmpty()){		
 			flag=false;	
@@ -117,20 +114,20 @@ public class GetObjBatch extends baseServlet {
 	/**
 	 * 生成limitstr
 	 */
-    public static void init_limitstr(){
-		limitstr="";
+    public void init_limitstr(){
+		//limitstr="";
 		//把任务表的名字添加到任务表数组中
 		tablemap.put("danger_result","mac");
 		tablemap.put("fellow","name");
 		tablemap.put("permanent_ad","mac");
 		tablemap.put("work_person_ad","mac");
 		tablemap.put("vip_svc","mac");
-		long begno=0;
+		//long begno=0;
 		//long endno=0;
 		if(TimeDate.isnum(page)) pageno=Integer.parseInt(page);
 		if(TimeDate.isnum(limit)) pagesize=Integer.parseInt(limit);
-		begno=pageno*pagesize;
-		limitstr ="  limit "+begno+","+pagesize;			
+		//begno=pageno*pagesize;
+		//limitstr ="  limit "+begno+","+pagesize;			
 	}
     
     

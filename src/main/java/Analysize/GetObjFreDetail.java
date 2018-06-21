@@ -3,7 +3,6 @@ package Analysize;
 import java.text.ParseException;
 import java.util.Map;
 
-import com.proweb.common.timeop;
 import com.proweb.mysqlobject.mysqlObject;
 
 import Common.ConnectToDatabase;
@@ -13,24 +12,15 @@ import debug.isDebug;
 import servlet.baseServlet;
 
 public class GetObjFreDetail  extends baseServlet {
-	static String attr=null;
-	static String taskid=null;
-	static String time_rang=null;
-	static String mac=null;
-	static int pageno=0;
-	static int pagesize=15;
-	static String limit=null;
-	static String page=null;
-	static String totalnums="0";
-	static int totals=0;
-	static String nowday=timeop.getDayFromTime(timeop.GetCurrentTime()).replace("-","");		
-	static String begday=TimeDate.getYesterday();
-	static String endday=TimeDate.getToday();	
-	static boolean isLocal=true;
-	static String ENDRESULT=null;
-	static String limitstr=null;
-	static int TOTALS=0;
-	static String teststr=null;
+	private String taskid=null;
+	private String time_rang=null;
+	private String mac=null;
+	private int pageno=0;
+	private int pagesize=15;
+	private String limit=null;
+	private String page=null;
+	private boolean isLocal=true;
+	private String ENDRESULT=null;
 	
 	@Override
 	public String handle() {
@@ -40,7 +30,7 @@ public class GetObjFreDetail  extends baseServlet {
 		mac=getObject("name");
 		limit=getObject("limit");
 		page=getObject("page");
-		totalnums=getObject("totalnums");	
+		//totalnums=getObject("totalnums");	
 		try {
 			ENDRESULT=Manage();
 		} catch (NumberFormatException | ParseException e) {
@@ -50,7 +40,7 @@ public class GetObjFreDetail  extends baseServlet {
 	}
 	
 	//主处理函数
-	 public static String Manage() throws NumberFormatException, ParseException{
+	 public String Manage() throws NumberFormatException, ParseException{
 		String  result="{\"status\":\"0\",\"pageno\":\""+pageno+"\",\"pagesize\":"+"\""+pagesize+"\",\"totalnums\":\""+0+"\",\"result\":[]}";
 		if(init_paras()){	
 			init_limitstr();
@@ -79,18 +69,18 @@ public class GetObjFreDetail  extends baseServlet {
 	}
 	
  	//参数输入判断，只做判断，不做处理
- 	public static boolean init_paras(){
+ 	public boolean init_paras(){
  		if(TimeDate.isnum(taskid)&&mac!=null&&(!mac.isEmpty())) return true;
  		return false;
  	}
 	//清空ENDRESULT
-	public static void clear_EndResult(){		
+	public void clear_EndResult(){		
 		ENDRESULT=null;		
 	}
  		
 	//生成limitstr
-	public static void init_limitstr(){
-		limitstr="";
+	public void init_limitstr(){
+		//limitstr="";
 		//long begno=0;
 		if(TimeDate.isnum(page)) pageno=Integer.parseInt(page);
 		if(TimeDate.isnum(limit)) pagesize=Integer.parseInt(limit);

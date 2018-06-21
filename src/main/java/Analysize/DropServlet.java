@@ -10,26 +10,20 @@ import servlet.baseServlet;
 //删除任务接口
 public class DropServlet extends baseServlet {
  
-	static boolean islocal=true;
-	static String[] database_paras=new String[4];
-	static String ENDRESULT;
-	static String taskid=null;
+	private String ENDRESULT;
+	private String taskid;
+	private boolean islocal;
 	
-	//baseServlet实现方法
 	@Override
-	public String handle() {		
-		islocal=isDebug.islocal;		
+	public String handle() {	
+		islocal = isDebug.islocal;
 		taskid=getObject("taskid");	
-		//如果输入参数符合规范，就执行删除操作
 		if(init()) ENDRESULT=delete();
 		else ENDRESULT="{\"status\":\"1\"}";		
 		return ENDRESULT;
 	}
 	
-	
-	
-	//主程序
-	public static String delete(){
+	public String delete(){
 		boolean flag=false;
 	    String result="{\"status\":\"1\"}";
 	    TaskNameServiceImpl tasknameServiceImpl=new TaskNameServiceImpl();		
@@ -40,9 +34,7 @@ public class DropServlet extends baseServlet {
 		return result;
 	}
 
-
-	//参数处理
-	public static Boolean init(){
+	public Boolean init(){
 		if(taskid==null||taskid.isEmpty()) return false;
 		else{
 			taskid=taskid.replace("，",",").replace("，",",");

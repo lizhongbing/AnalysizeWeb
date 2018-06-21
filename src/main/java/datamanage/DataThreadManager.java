@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.proweb.job.libObject;
-
+/**
+ * @author lizb
+ * @date 2018年6月21日
+ * Description: ~ 守护线程，程序启动就开启，每隔一段时间查询本地缓存中是否有分析程序的结果数据，然后插入到数据库中
+ */
 public class DataThreadManager {
 	
 	private static int SLEEP_TIME = 10000;
@@ -31,9 +35,9 @@ public class DataThreadManager {
 	
 	@SuppressWarnings("static-access")
 	private static void startPollQueue() {
-		System.out.println("查询队列...");
+		System.out.println("query dataQueue...");
 		if(checkQueue()){
-			System.out.println("插入数据库...");
+			System.out.println("insert data to mysql...");
 			insertDataToSql();
 		}else{
 			try {

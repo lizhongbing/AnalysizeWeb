@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 import debug.isDebug;
+import probd.hbase.common.MyLog;
 
 public class HostPortManager {
 	

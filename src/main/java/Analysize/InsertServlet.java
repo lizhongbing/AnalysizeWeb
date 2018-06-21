@@ -17,24 +17,20 @@ import debug.isDebug;
 import servlet.baseServlet;
 
 public class InsertServlet extends baseServlet  {	
-	 static boolean islocal=true;
-	 static String[] database_paras=new String[4];	
-	 static String taskid=null;
-	 static String name=null;
-	 static String tasktype=null;
-	 static String taskdesc=null;
-	 static String lable=null;
-	 static String taskmd5=null;		
-	 static String userid=null;
-	 static String timerang=null;
-	 static String macstr=null;
-	 static long timeval;
-	 static String content=null;
-	 static int status=0;
-	 static int USERID=0;
-	 static long TASKID=0;
-	 String ENDRESULT;
-	 static long starttime=System.currentTimeMillis()/1000;
+	private boolean islocal=true;
+	private String taskid;
+	private String name;
+	private String tasktype;
+	private String taskdesc;
+	private String lable;
+	private String taskmd5;		
+	private String userid;
+	private String content;
+	private int status=0;
+	private int USERID=0;
+	private long TASKID=0;
+	private String ENDRESULT;
+	private long starttime=System.currentTimeMillis()/1000;
 	@Override
 	public String handle() {			
 		islocal=isDebug.islocal;
@@ -53,7 +49,7 @@ public class InsertServlet extends baseServlet  {
 	}
 	
 	//主程序
-	public static String insert(){		
+	public String insert(){		
 		  String result="{\"status\":\"1\",\"taskid\":\"null\"}";
 		  TaskName taskname=new TaskName();
 		  taskname.setTaskid(TASKID);
@@ -86,7 +82,7 @@ public class InsertServlet extends baseServlet  {
 	}
     
 	//参数处理
-	public static Boolean init(){
+	public Boolean init(){
 		Boolean flag=true;
 		if(taskid==null||(taskid.isEmpty())) taskid="0";
 		if(userid==null||(userid.isEmpty())) userid="0";

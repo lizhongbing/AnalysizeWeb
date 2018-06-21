@@ -66,6 +66,7 @@ public class MyLog {
 		return true;
 	}
 	public static void AddLog(String filename,String buffer){
+		//if(!isDebug.islocal) return;//正式环境去掉日志
 		String pathname=filename;
 		if(!GetLogBaseDir())return;
 		if(!filename.startsWith(logbasedir)){

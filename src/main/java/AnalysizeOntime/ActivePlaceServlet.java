@@ -13,29 +13,23 @@ import Common.EncodeSet;
 import Common.TASK_DEFINITION;
 import Common.TimeDate;
 import Model.TaskName;
-import debug.isDebug;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import servlet.baseServlet;
 
 public class ActivePlaceServlet  extends baseServlet  {	
-	 static boolean islocal=true;
-	 static String[] database_paras=new String[4];		
-	 static String timerang=null;
-	 static String mac=null;
-	 static String tasktype=null;
-	 static String svc=null;
-	 static long timeval;
-	 static long taskid;
-	 static String pageno=null;
-	 static String pagesize=null;
-	 static int pno=0;
-	 static int psize=10;
-	 String ENDRESULT;
-	 static long starttime=System.currentTimeMillis()/1000;
+	private String timerang;
+	private String mac;
+	private String tasktype;
+	private String svc;
+	private String pageno;
+	private String pagesize;
+	private int pno=0;
+	private int psize=10;
+	private String ENDRESULT;
+	
 	@Override
 	public String handle() {			
-		islocal=isDebug.islocal;
 		tasktype=EncodeSet.str_toUTF8(getObject("tasktype"));
 		timerang=getObject("timerang");	
 		mac=getObject("mac");
@@ -48,8 +42,7 @@ public class ActivePlaceServlet  extends baseServlet  {
 		return ENDRESULT;
 	}
 	
-	//主程序
-	public static String analyse(){		
+	public String analyse(){		
 		  String result="{\"status\":\"1\",\"taskid\":\"null\"}";
 		  TaskName taskname=new TaskName();
 		  taskname.setTasktype(Integer.parseInt(tasktype));
@@ -60,11 +53,8 @@ public class ActivePlaceServlet  extends baseServlet  {
  			  int typenum=(int) (Integer.parseInt(tasktype)-tasktype_basenum);
  			  taskname.setTasktype(typenum);
  			  taskname.setTaskid(System.currentTimeMillis()/1000+taskname.getTasktype());
- 			  OnlineAnalyse actual=new OnlineAnalyse();
-			  actual.putTaskName(taskname);
-			  String data=null;
-			  //获取所有的mac,场所
-			  data=actual.execute_getAlldata(taskname,timerang,mac,svc,pno,psize);
+ 			  OnlineAnalyse analyse=new OnlineAnalyse(taskname);
+			  String data=analyse.getAlldata(timerang,mac,svc,pno,psize);
 			  if(data.contains(",")){
 				  if(!data.startsWith("{"))data="{"+data;
 				  if(!data.endsWith("}"))data=data+"}";
@@ -76,8 +66,7 @@ public class ActivePlaceServlet  extends baseServlet  {
 		return result;
 	}
   
-	//参数处理
-	public static Boolean init(){
+	public Boolean init(){
 		if(!TimeDate.isnum(tasktype)) return false;
 		if(Integer.parseInt(tasktype)<TASK_DEFINITION.tasktype_BaseNum) return false;
 		if(!TimeDate.isNormaltime_rang(timerang)) return false; 	
@@ -101,7 +90,7 @@ public class ActivePlaceServlet  extends baseServlet  {
      //intput "{\"data\":[{\"mac\":\"C8-F2-30-5B-5C-A4\",\"day\":\"20180326\",\"svc\":\"37090235990194\",\"counts\":\"1\",\"timelen\":\"1200\",\"totaltimelen\":\"1200\"},
 	 //         {\"mac\":\"C8-F2-30-5B-5C-A4\",\"day\":\"20180324\",\"svc\":\"37090235990194\",\"counts\":\"2\",\"timelen\":\"1200\",\"totaltimelen\":\"2400\"}]}";
 	 //return "\"data\":[{\"mac\":\"C8-F2-30-5B-5C-A4\",\"svc\":\"37090235990194\",\"counts\":\"3\",\"timelen\":\"2400\",\"totaltimelen\":\"3600\"}]";
-	 public static String getActivePlacedata_fromJsonData(String jsondata){
+	 public String getActivePlacedata_fromJsonData(String jsondata){
 		 MyLog.AddLog("actual_data_analyzer.log", "before active formatdata jsondata="+jsondata);
 		 String result="";
 		 Map<String, Integer> macsvc_counts_map=new HashMap<String,Integer>();
