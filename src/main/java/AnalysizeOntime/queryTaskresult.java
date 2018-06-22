@@ -23,7 +23,6 @@ import Common.ConnectToDatabase;
 import Common.DatabaseParas;
 import Common.TASK_DEFINITION;
 import Common.Table_Task;
-import Common.Task_result_Judge_new;
 import Common.TimeDate;
 import Model.task_spacetime_lib;
 import Model.task_tracepegging_lib;
@@ -35,19 +34,20 @@ import servlet.baseServlet;
 
 public class queryTaskresult extends baseServlet {
 	
-	private String taskid=null;	
+	private String taskid;	
 	private long TASKID=0;  
-	private String  mac="";	
-	private String  type="";
+	private String mac;	
+	private String type;
 	private String ENDRESULT;
-	private String limit=null;
-	private String page=null;
+	private String limit;
+	private String page;
 	private int  pagesize=10;
 	private int  pageno=1;	 
 	private String conditionnum="1";
 	private int ConditionNum=1;
 	private int total=0;
 	private String tablename;
+	private mysqlObject sqlobj;
     
 	@Override
 	public String handle() {
@@ -65,7 +65,7 @@ public class queryTaskresult extends baseServlet {
 	public boolean init(){
 		if(!TimeDate.isnum(taskid)) return false;
 		else TASKID=Long.parseLong(taskid);	
-		if(type==null||type.length()==0) return false;
+		if(StringUtils.isEmpty(type)) return false;
         if(TimeDate.isnum(page)) pageno=Integer.parseInt(page);
 		if(TimeDate.isnum(limit)) pagesize=Integer.parseInt(limit);
 		if(TimeDate.isnum(conditionnum)) ConditionNum=Integer.parseInt(conditionnum);
@@ -74,36 +74,31 @@ public class queryTaskresult extends baseServlet {
 	
 	public String getResult(){
 		MyLog.AddLog("actual_data_analyzer.log", "step===start to getResult===time===" + System.currentTimeMillis()+"===taskid===" + taskid);
-		String str=ENDRESULT;
+		String result=ENDRESULT;
 		ConnectToDatabase.connect();
-		mysqlObject sqlobj=new mysqlObject();
-		if(pageno>0) pageno=pageno-1;
-		String tasktype=Table_Task.getActual_Tasktype_by_taskid(sqlobj,taskid);
-		tablename=Table_Task.getActual_taskname_by_tasktype(tasktype);
+		sqlobj = new mysqlObject();
+		if(pageno>0) pageno = pageno-1;
+		String tasktype = Table_Task.getActual_Tasktype_by_taskid(sqlobj,taskid);
+		tablename = Table_Task.getActual_taskname_by_tasktype(tasktype);
 		
-		if(type.contains("result")) str=getTotalCountNums();
-		if(type.contains("mac"))  str=getMaclist_pagelimit(tablename,"nums",pageno,pagesize); 
-		if(type.contains("trace")) str=getTrace_pagelimit(sqlobj,tablename,pageno,pagesize);		
+		String str = "";
+		if(type.contains("result")) str=getMacsInNums();
+		if(type.contains("mac"))  str=getMacList("nums"); 
+		if(type.contains("trace")) str=getMacTrace();		
 		
-		String res="";
-		if(type.contains("result")) {
-			str=str.replace("},{","}={");
-			res=Task_result_Judge_new.getdata_fromMtoN_likepage_instr(str,pageno,pagesize);
-		}
-		else res=str;
-		str="{\"total\":\""+total+"\",\"data\":["+res+"]}";
+		result="{\"total\":\""+total+"\",\"data\":["+str+"]}";
 		MyLog.AddLog("actual_data_analyzer.log", "step===end to getResult===time==="+ System.currentTimeMillis() +"===total===" + total);
-		return str;
+		return result;
 	}
 	
 	/**
 	 * 获取trace数据
 	 */
-	private String getTrace_pagelimit(mysqlObject sqlobj,String tablename,int pageno,int limit) {		
+	private String getMacTrace() {		
 		//从本地缓存中获取，如果没有，则从数据库中获取
-		String data = getTraceFromCache(tablename,pageno,limit);
+		String data = getTraceFromCache();
 		if(data == null){
-			data = getTraceFromDB(sqlobj,tablename,pageno,limit);
+			data = getTraceFromDB();
 		}
 		return data;
 	}
@@ -111,46 +106,46 @@ public class queryTaskresult extends baseServlet {
 	/**
 	 * 获取MAC数据
 	 */
-	private String getMaclist_pagelimit(String tablename,String columnname,int pageno,int pagesize) {
+	private String getMacList(String columnname) {
 		//从本地缓存中获取，如果没有，则从数据库中获取
-		String result = getMacFromCache(tablename,columnname,pageno,pagesize);
+		String result = getMacFromCache(columnname);
 		if(result == null){
-			result = getMacFromDB(tablename,columnname,pageno,pagesize);
+			result = getMacFromDB(columnname);
 		}
 		return result;
 	}
 	
 	/**
-	 * 获取碰撞或采集信息
+	 * 获取碰撞或采集信息对应的MAC数
 	 */
-	public String getTotalCountNums(){
+	public String getMacsInNums(){
 		//从本地缓存中获取，如果没有，则从数据库中获取
-		String result = getTotalCountNumsFromCache();
+		String result = getNumsAndMacsFromCache();
 		if(result == null){
-			result = getTotalCountNumsFromDB();
+			result = getNumsAndMacsFromDB();
 		}
 		return result;
 	}
 	
-	private String getTraceFromCache(String tablename,int pageno, int limit) {
+	private String getTraceFromCache() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromCache");
 		String data = null;
 		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
-			sortList(tablename,list,"etime");
-			data = getTraceData(tablename,list,pageno,limit);
+			sortList(list,"etime");
+			data = getTraceData(list);
 		}
 		return data;
 	}
 
-	private String getTraceData(String tableName,ArrayList<libObject> list,int pageno, int limit) {
+	private String getTraceData(ArrayList<libObject> list) {
 		String data = null;
-		switch (tableName) {
+		switch (tablename) {
 		case "trace_pegging":
-			data = getTraceFromTracePegging(list,pageno,limit);
+			data = getTraceFromTracePegging(list);
 			break;
 		case "SpaceTime":
-			data = getTraceFromSpaceTime(list,pageno,limit);
+			data = getTraceFromSpaceTime(list);
 			break;
 		default:
 			break;
@@ -158,47 +153,53 @@ public class queryTaskresult extends baseServlet {
 		return data;
 	}
 
-	private String getTraceFromSpaceTime(ArrayList<libObject> value,int pageno, int limit) {
+	private String getTraceFromSpaceTime(ArrayList<libObject> value) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromSpaceTime");
-		//计算total
-		total = value.size();
-		if(mac.length() > 0){
-			int count = 0;
+		List<libObject> list = null;
+		if(StringUtils.isNotEmpty(mac)){
+			//查找单个MAC的轨迹
+			list = new ArrayList<libObject>();
 			for (libObject obj : value) {
 				task_spacetime_lib bean = (task_spacetime_lib)obj;
 				if(mac.equals(bean.getMac())){
-					count++;
+					list.add(bean);
 				}
 			}
-			total = count;
+		}else{
+			//查找所有MAC的轨迹
+			list = value;
 		}
-		
-		String result = getPageResult(value,pageno,limit);
+		total = list.size();
+		String result = getPageResult(list);
 		return result;
 	}
 
-	private String getTraceFromTracePegging(ArrayList<libObject> value,int pageno, int limit) {
+	private String getTraceFromTracePegging(ArrayList<libObject> value) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromTracePegging");
-		//计算total
-		total = value.size();
-		if(mac.length() > 0){
-			int count = 0;
+		List<libObject> list = null;
+		if(StringUtils.isNotEmpty(mac)){
+			//查找单个MAC的轨迹
+			list = new ArrayList<libObject>();
 			for (libObject obj : value) {
 				task_tracepegging_lib bean = (task_tracepegging_lib)obj;
 				if(mac.equals(bean.getMac())){
-					count++;
+					list.add(bean);
 				}
 			}
-			total = count;
+		}else{
+			//查找所有MAC的轨迹
+			list = value;
 		}
-		
-		String result = getPageResult(value,pageno,limit);
+		total = list.size();
+		String result = getPageResult(list);
 		return result;
 	}
 
-	private String getPageResult(ArrayList<libObject> value,int pageno, int limit) {
-		int fromIndex = pageno*limit;
-		int toIndex = fromIndex+limit > value.size() ? value.size() : fromIndex+limit;
+
+	private String getPageResult(List<libObject> value) {
+		int fromIndex = pageno*pagesize;
+		int toIndex = fromIndex + pagesize;
+		toIndex = toIndex > value.size() ? value.size() : toIndex;
 		List<libObject> resultList = value.subList(fromIndex,toIndex);
 		QueryJsonParse<libObject> parse = new QueryJsonParse<libObject>();
 		parse.setRows(resultList);
@@ -210,12 +211,12 @@ public class queryTaskresult extends baseServlet {
 		return result;
 	}
 	
-	private String getTraceFromDB(mysqlObject sqlobj, String tablename,int pageno,int limit) {
+	private String getTraceFromDB() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromDB");
 		String res="";
 		String sqlMac = mac.length() > 0 ? " and  mac=\""+mac+"\"" : "";
 		String countSql="select count(*) as count from "+tablename+" where taskid=" + TASKID + sqlMac;
-		String resSql="select mac,stime,etime,svc from "+tablename+" where taskid="+TASKID + sqlMac +" order by etime desc limit "+pageno*limit+","+limit;
+		String resSql="select mac,stime,etime,svc from "+tablename+" where taskid="+TASKID + sqlMac +" order by etime desc limit "+pageno*pagesize+","+pagesize;
 		sqlobj.clearObject();
 		List<mysqlRow>	crows=sqlobj.ExeSqlQuery(countSql);
 		if(crows.size()>0){
@@ -234,25 +235,25 @@ public class queryTaskresult extends baseServlet {
 		return res;
 	}
 	
-	private String getMacFromCache(String tableName,String columnname,int pageno,int pagesize) {
+	private String getMacFromCache(String columnname) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromCache");
 		String data = null;
-		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tableName);
+		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
-			sortList(tableName, list,"nums");
-			data = getMacData(tableName,columnname,pageno,pagesize,list);
+			sortList(list,"nums");
+			data = getMacData(columnname,list);
 		}
 		return data;
 	}
 	
-	private String getMacData(String tableName,String columnname,int pageno,int pagesize, ArrayList<libObject> list) {
+	private String getMacData(String columnname, ArrayList<libObject> list) {
 		String data = "";
-		switch (tableName) {
+		switch (tablename) {
 		case "trace_pegging":
-			data = getMacFromTracePegging(list,columnname,pageno,pagesize);
+			data = getMacFromTracePegging(list,columnname);
 			break;
 		case "SpaceTime":
-			data = getMacFromSpaceTime(list,columnname,pageno,pagesize);
+			data = getMacFromSpaceTime(list,columnname);
 			break;
 		default:
 			break;
@@ -260,7 +261,7 @@ public class queryTaskresult extends baseServlet {
 		return data;
 	}
 
-	private String getMacFromSpaceTime(ArrayList<libObject> list, String columnname, int pageno,int pagesize) {
+	private String getMacFromSpaceTime(ArrayList<libObject> list, String columnname) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromSpaceTime");
 		String result = "";
 		if(mac==null || mac.length()==0){
@@ -331,7 +332,7 @@ public class queryTaskresult extends baseServlet {
 	
 	}
 
-	private String getMacFromTracePegging(ArrayList<libObject> list, String columnname, int pageno,int pagesize) {
+	private String getMacFromTracePegging(ArrayList<libObject> list, String columnname) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromTracePegging");
 		MyLog.AddLog("actual_data_analyzer.log", "step===pageno==="+pageno+"===pagesize" +pagesize);
 		String result = "";
@@ -403,12 +404,11 @@ public class queryTaskresult extends baseServlet {
 		return result;
 	}
 
-	private String getMacFromDB(String tablename,String columnname,int pageno,int pagesize) {
+	private String getMacFromDB(String columnname) {
 		String str="";
 		String datastr="";
-		mysqlObject sqlobj = new mysqlObject();
 		if(mac==null||mac.length()==0){
-			List<String> maclist = getAllMacs(sqlobj,tablename,columnname,pageno,pagesize);
+			List<String> maclist = getAllMacs(sqlobj,tablename,columnname);
 			if(maclist.isEmpty()) return str;	
 			for(int i=0;i<maclist.size();i++){
 				String mac=maclist.get(i).trim();
@@ -426,7 +426,7 @@ public class queryTaskresult extends baseServlet {
 		return str;
 	}
 	
-	private List<String> getAllMacs(mysqlObject sqlobj,String tablename,String columnname,int pageno,int pagesize) {
+	private List<String> getAllMacs(mysqlObject sqlobj,String tablename,String columnname) {
 		List<String> maclist=new ArrayList<String>();
 		sqlobj.clearObject();
 		String conditionNumSql = StringUtils.isEmpty(conditionnum) ? "" : " and "+columnname+"="+ConditionNum;
@@ -443,7 +443,7 @@ public class queryTaskresult extends baseServlet {
 			 }
 		}		
 		sqlobj.clearObject();
-		String sql="select distinct(mac) from "+tablename+" where  taskid="+TASKID + conditionNumSql + "order by "+columnname+" desc limit "+pageno*pagesize+","+pagesize;
+		String sql="select distinct(mac) from "+tablename+" where  taskid="+TASKID + conditionNumSql +" order by "+columnname+" desc limit "+pageno*pagesize+","+pagesize;
 		System.out.println("sql="+sql);
 		MyLog.AddLog("actual_data_analyzer.log", "sql="+sql);
 		List<mysqlRow>	rows2=sqlobj.ExeSqlQuery(sql);			
@@ -463,30 +463,30 @@ public class queryTaskresult extends baseServlet {
 		return maclist;
 	}
 	
-	private String getTotalCountNumsFromCache() {
+	private String getNumsAndMacsFromCache() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTotalCountNumsFromCache");
 		String data = null;
 		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
-			data = getTotalCountNumsData(tablename,list);
+			data = getNumsAndMacsData(tablename,list);
 		}
 		return data;
 	}
 
-	private String getTotalCountNumsData(String tableName,ArrayList<libObject> list) {
+	private String getNumsAndMacsData(String tableName,ArrayList<libObject> list) {
 		String data = "";
 		switch (tableName) {
 		case "trace_pegging":
-			data = getNumsDataFromTracePegging(list);
+			data = getNumsAndMacsFromTracePegging(list);
 			break;
 		case "SpaceTime":
-			data = getNumsDataFromSpaceTime(list);
+			data = getNumsAndMacsFromSpaceTime(list);
 			break;
 		}
 		return data;
 	}
 
-	private String getNumsDataFromSpaceTime(ArrayList<libObject> list) {
+	private String getNumsAndMacsFromSpaceTime(ArrayList<libObject> list) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getNumsDataFromSpaceTime");
 		String result = "";
 		Map<String, Set<String>> hashMap = new HashMap<String, Set<String>>();
@@ -507,16 +507,22 @@ public class queryTaskresult extends baseServlet {
 		
 		Set<Entry<String, Set<String>>> entrySet = hashMap.entrySet();
 		// 降序
-		List<Map.Entry<String, Set<String>>> tempList=new ArrayList<Map.Entry<String, Set<String>>>(entrySet);
-        Collections.sort(tempList, new Comparator<Map.Entry<String, Set<String>>>(){  
+		List<Map.Entry<String, Set<String>>> orderdList=new ArrayList<Map.Entry<String, Set<String>>>(entrySet);
+        Collections.sort(orderdList, new Comparator<Map.Entry<String, Set<String>>>(){  
           @Override  
           public int compare(Entry<String, Set<String>> o1,Entry<String, Set<String>> o2) {    
               return o2.getKey().compareTo(o1.getKey());  
           }});
-		
-		for (Entry<String, Set<String>> entry : entrySet) {
+        //分页
+	    int fromIndex = pageno*pagesize;
+	    int toIndex = fromIndex + pagesize;
+	    toIndex = toIndex > orderdList.size() ? orderdList.size() : toIndex;
+	    List<Entry<String, Set<String>>> subList = orderdList.subList(fromIndex, toIndex);
+		for (Entry<String, Set<String>> entry : subList) {
 			String num = entry.getKey();
 			Set<String> set = entry.getValue();
+			MyLog.AddLog("actual_data_analyzer.log", "nums==="+num+"===set.size()==="+set.size());
+
 			result += "{\"conditionnum\":\""+num+"\",\"countnum\":\""+set.size()+"\",\"lablenum\":\"0\",\"falsemacnum\":\"0\",\"taskid\":\""+taskid+"\"},";			
 		}
 		if(result.endsWith(",")) result=result.substring(0,result.length()-1);		
@@ -525,12 +531,14 @@ public class queryTaskresult extends baseServlet {
 		return result;
 	}
 
-	private String getNumsDataFromTracePegging(ArrayList<libObject> list) {
+	private String getNumsAndMacsFromTracePegging(ArrayList<libObject> list) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getNumsDataFromTracePegging");
+		
 		String result = "";
 		Map<String, Set<String>> hashMap = new HashMap<String, Set<String>>();
 		for (libObject obj : list) {
 			task_tracepegging_lib bean = (task_tracepegging_lib)obj;
+			
 			String nums = bean.getNums();
 			if(hashMap.containsKey(nums)){
 				Set<String> set = hashMap.get(nums);
@@ -546,16 +554,22 @@ public class queryTaskresult extends baseServlet {
 		
 		Set<Entry<String, Set<String>>> entrySet = hashMap.entrySet();
 		// 降序
-		List<Map.Entry<String, Set<String>>> tempList=new ArrayList<Map.Entry<String, Set<String>>>(entrySet);
-        Collections.sort(tempList, new Comparator<Map.Entry<String, Set<String>>>(){  
+		List<Map.Entry<String, Set<String>>> orderdList=new ArrayList<Map.Entry<String, Set<String>>>(entrySet);
+        Collections.sort(orderdList, new Comparator<Map.Entry<String, Set<String>>>(){  
           @Override  
           public int compare(Entry<String, Set<String>> o1,Entry<String, Set<String>> o2) {    
               return o2.getKey().compareTo(o1.getKey());  
           }}); 
-
-		for (Entry<String, Set<String>> entry : entrySet) {
+        //分页
+	    int fromIndex = pageno*pagesize;
+	    int toIndex = fromIndex + pagesize;
+	    toIndex = toIndex > orderdList.size() ? orderdList.size() : toIndex;
+	    List<Entry<String, Set<String>>> subList = orderdList.subList(fromIndex, toIndex);
+		for (Entry<String, Set<String>> entry : subList) {
 			String num = entry.getKey();
 			Set<String> set = entry.getValue();
+			MyLog.AddLog("actual_data_analyzer.log", "nums="+num+"======set.size()="+set.size());
+
 			result += "{\"conditionnum\":\""+num+"\",\"countnum\":\""+set.size()+"\",\"lablenum\":\"0\",\"falsemacnum\":\"0\",\"taskid\":\""+taskid+"\"},";			
 		}
 		if(result.endsWith(",")) result=result.substring(0,result.length()-1);		
@@ -564,10 +578,9 @@ public class queryTaskresult extends baseServlet {
 		return result;
 	}
 
-	private String getTotalCountNumsFromDB() {
+	private String getNumsAndMacsFromDB() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTotalCountNumsFromDB");
 		String datastr="";
-		mysqlObject sqlobj = new mysqlObject();
 		sqlobj.clearObject();
 		MyLog.AddLog("actual_data_analyzer.log", "step===time===" + System.currentTimeMillis());
 
@@ -577,7 +590,19 @@ public class queryTaskresult extends baseServlet {
 			 String result=sqlobj.toJosn(0,10,10);				 
 			 QueryJsonParse<NumsAndMacCount> bean = JSON.parseObject(result, new TypeReference<QueryJsonParse<NumsAndMacCount>>(){});
 			 ArrayList<NumsAndMacCount> rows2 = (ArrayList<NumsAndMacCount>) bean.getRows();
-			 for (NumsAndMacCount numsAndMacCount : rows2) {
+			 //排序
+			 Collections.sort(rows2,new Comparator<NumsAndMacCount>(){
+				@Override
+				public int compare(NumsAndMacCount o1, NumsAndMacCount o2) {
+					return o2.getNums().compareTo(o1.getNums());
+				}
+			 });
+			 //分页
+			 int fromIndex = pageno*pagesize;
+			 int toIndex = fromIndex + pagesize;
+			 toIndex = toIndex > rows2.size() ? rows2.size() : toIndex;
+			 List<NumsAndMacCount> subList = rows2.subList(fromIndex, toIndex);
+			 for (NumsAndMacCount numsAndMacCount : subList) {
 				 datastr+="{\"conditionnum\":\""+numsAndMacCount.getNums()+"\",\"countnum\":\""+numsAndMacCount.getCount()+"\",\"lablenum\":\"0\",\"falsemacnum\":\"0\",\"taskid\":\""+taskid+"\"},";			
 			 }
 		}
@@ -621,15 +646,14 @@ public class queryTaskresult extends baseServlet {
 			 String tmp=result.split("\"rows\"")[1];
 			 numsstr=tmp.replace("\"nums\":","").replace("\"","").replace(":","").replace("[","").replace("{","").replace("}","").replace("]","");
 		}
-		if(numsstr.length()==0||numsstr==null) return null ;
+		if(StringUtils.isEmpty(numsstr)) return null ;
 		if(numsstr.endsWith(",")) numsstr=numsstr.substring(0,numsstr.length()-1);
 		if(numsstr.contains(",")){
 			String[] arr=numsstr.split(",");
 			for(String nums:arr){
 				if(TimeDate.isnum(nums))list.add(Integer.parseInt(nums));
 			}
-		}
-		else {
+		}else {
 			if(TimeDate.isnum(numsstr))list.add(Integer.parseInt(numsstr));
 		}
 		int[] resarray = new int[list.size()];
@@ -644,9 +668,9 @@ public class queryTaskresult extends baseServlet {
 	 * 根据columnname排序
 	 * @param list
 	 */
-	private static void sortList(String tableName,ArrayList<libObject> list,final String columnname) {
+	private void sortList(ArrayList<libObject> list,final String columnname) {
 		Comparator<libObject> comparator  = null;
-		switch (tableName) {
+		switch (tablename) {
 		case "trace_pegging":
 			comparator = new Comparator<libObject>(){
 				@Override

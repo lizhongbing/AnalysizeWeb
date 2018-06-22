@@ -12,42 +12,48 @@ import com.proweb.job.libObject;
  */
 public class DataThreadManager {
 	
-	private static int SLEEP_TIME = 10000;
+	private static final int SLEEP_TIME = 10000;
+	private static ConcurrentLinkedQueue<HashMap<String, ArrayList<libObject>>> queue = AnalysizeDataSqlManager.getQueue();
 	
-	private static ConcurrentLinkedQueue<HashMap<String, ArrayList<libObject>>> queue;
-
-	static{
-		initQueue();
-	}
+	private static Thread thread = new Thread(new Runnable() {
+		
+		@Override
+		public void run() {
+			startPollQueue();
+		}
+	});
+	
 	
 	/**
 	 * 开启线程
 	 */
 	public static void start(){
-		 new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				startPollQueue();
-			}
-		}).start();
+		thread.start();
 	}
+	
 	
 	@SuppressWarnings("static-access")
 	private static void startPollQueue() {
-		System.out.println("query dataQueue...");
-		if(checkQueue()){
-			System.out.println("insert data to mysql...");
-			insertDataToSql();
-		}else{
+		while (true) {
+			
+			System.out.println("query dataQueue...");
+			if(checkQueue()){
+				System.out.println("insert data to mysql...");
+				insertDataToSql();
+			}
+			
 			try {
-				Thread.currentThread().sleep(SLEEP_TIME);
+				thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			
 		}
-		startPollQueue();
 	}
+	
+	
+	
+	
 
 	/**
 	 * 开始插入数据到数据库
@@ -63,10 +69,5 @@ public class DataThreadManager {
 		return !queue.isEmpty();
 	}
 
-	protected static void initQueue() {
-		queue = AnalysizeDataSqlManager.getQueue();
-	}
-	
-	
 
 }
