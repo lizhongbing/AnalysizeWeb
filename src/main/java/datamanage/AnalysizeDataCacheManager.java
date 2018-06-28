@@ -15,7 +15,7 @@ import probd.hbase.common.MyLog;
  * @date 2018年6月13日
  * Description: ~ 分析程序执行结果返回的数据缓存
  */
-public class AnalysizeDataCache {
+public class AnalysizeDataCacheManager {
 	
 	/**taskid对应的任务结果数据*/
 	private static final Map<String,HashMap<String,ArrayList<libObject>>> hashMap = new  HashMap<String, HashMap<String,ArrayList<libObject>>>();
