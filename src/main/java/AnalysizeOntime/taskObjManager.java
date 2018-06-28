@@ -30,7 +30,8 @@ import Model.task_vip_svc_lib;
 import Model.task_vip_trace_lib;
 import Model.task_work_person_ad_lib;
 import Model.task_work_person_lib;
-import datamanage.AnalysizeDataCache;
+import datamanage.AnalysizeDataCacheManager;
+import datamanage.AnalysizeDataDiskManager;
 import datamanage.AnalysizeDataSqlManager;
  
 public class taskObjManager extends objManager{
@@ -89,6 +90,7 @@ public class taskObjManager extends objManager{
 			this.status = STATUS_SUCCESS;
 			saveDataToMySql();
 			changeTaskStatus();
+			saveDataToFile();
 		}
 		if(status.contains("error")){
 			//当状态为status:failed时，表示任务失败，需要改变数据库的状态
@@ -106,11 +108,20 @@ public class taskObjManager extends objManager{
 	}
 
 	/**
+	 * 将数据保存到服务器具体位置的文件中，供客户端自行下载
+	 */
+	private void saveDataToFile() {
+		String taskid = String.valueOf(taskname.getTaskid());
+		AnalysizeDataDiskManager.saveDataToDisk(taskid);
+	}
+
+	
+	/**
 	 * 将结果数据保存到数据库
 	 */
 	private void saveDataToMySql() {
 		String taskid = String.valueOf(taskname.getTaskid());
-		HashMap<String, ArrayList<libObject>> job = AnalysizeDataCache.getJobByTaskid(taskid);
+		HashMap<String, ArrayList<libObject>> job = AnalysizeDataCacheManager.getJobByTaskid(taskid);
 		AnalysizeDataSqlManager.addDataToQueue(job,taskid);
 	}
 
@@ -123,6 +134,7 @@ public class taskObjManager extends objManager{
 			socket.close();
 		}
 	}
+	
 
 	/**
 	 * 改变任务的完成状态
@@ -132,12 +144,13 @@ public class taskObjManager extends objManager{
 		String taskid = String.valueOf(taskname.getTaskid());
 		MyLog.AddLog("actual_data_analyzer.log","changeTaskStatus===taskid==="+taskid+"===status==="+status);
 		
-		AnalysizeDataCache.setTaskStatusInCache(taskid, status);
+		AnalysizeDataCacheManager.setTaskStatusInCache(taskid, status);
 		
 		ConnectToDatabase.connect();
 		mysqlObject obj = new mysqlObject();
 		obj.clearObject();
-		String sql="update "+TASK_DEFINITION.tablename_actual_taskname+" set status="+status+" where taskid="+taskid;
+		long endTime = System.currentTimeMillis()/1000;
+		String sql="update "+TASK_DEFINITION.tablename_actual_taskname+" set status="+status+",task_etime="+endTime+" where taskid="+taskid;
 		mysqlObject.ExeSql(sql);
 	}
 	

@@ -11,7 +11,7 @@ import Common.EncodeSet;
 import Common.TASK_DEFINITION;
 import Common.TimeDate;
 import Model.TaskName;
-import datamanage.AnalysizeDataCache;
+import datamanage.AnalysizeDataCacheManager;
 import probd.hbase.common.MyLog;
 import servlet.baseServlet;
 
@@ -46,7 +46,7 @@ public class addTask  extends baseServlet  {
 		String str=ENDRESULT;
 		try {
 			insertActualTask();
-			AnalysizeDataCache.setTaskStatusInCache(taskid, 2);
+			AnalysizeDataCacheManager.setTaskStatusInCache(taskid, 2);
 			startAnalyse();
 			str="{\"status\":\"0\",\"taskid\":\""+taskid+"\"}";
 		} catch (Exception e) {
@@ -63,7 +63,8 @@ public class addTask  extends baseServlet  {
 		ConnectToDatabase.connect();
 		mysqlObject sqlobj=new mysqlObject();
 		sqlobj.clearObject();
-		String sql="insert into actual_taskname(taskid,tasktype,taskdesc,taskname,taskmd5,status)values("+TASKID+","+tasktype+",\""+taskdesc_tomysql+"\","+"\"\""+","+"\"\","+"2"+")";
+		long startTime = System.currentTimeMillis()/1000;
+		String sql="insert into actual_taskname(taskid,tasktype,taskdesc,status,task_stime)values("+TASKID+","+tasktype+",\""+taskdesc_tomysql+"\","+"2"+","+startTime+")";
 		mysqlObject.ExeSql(sql);
 	}
 
@@ -78,6 +79,7 @@ public class addTask  extends baseServlet  {
 		String jobname=analyse.getJobName(timerang,"", codes,false);
 		analyse.startStreamProcess(jobname);
 	}
+	
 
 	public boolean init(){
 		if(!TimeDate.isnum(taskid)) return false;

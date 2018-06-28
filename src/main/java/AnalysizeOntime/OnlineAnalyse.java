@@ -27,7 +27,7 @@ import Common.Task_result_Judge_new;
 import Common.ThreadManager;
 import Common.ZookeeperMethod;
 import Model.TaskName;
-import datamanage.AnalysizeDataCache;
+import datamanage.AnalysizeDataCacheManager;
 import debug.isDebug;
 import redis.clients.jedis.Jedis;
 
@@ -287,7 +287,7 @@ public class OnlineAnalyse {
 			System.out.println("stream_process:"+jobname);
 			job=new HashMap<String,ArrayList<libObject>>();
 			jobCacheManage.addJob(jobname, job);
-			AnalysizeDataCache.createMapRelation(String.valueOf(taskname.getTaskid()), job);
+			AnalysizeDataCacheManager.createMapRelation(String.valueOf(taskname.getTaskid()), job);
 			//创建client的socket服务，指定目的主机和port
 	        Socket s;
 			try {

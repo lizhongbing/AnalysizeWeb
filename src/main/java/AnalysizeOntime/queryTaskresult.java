@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.proweb.common.timeop;
 import com.proweb.job.libObject;
 import com.proweb.mysqlobject.mysqlObject;
 import com.proweb.mysqlobject.mysqlObject.mysqlRow;
@@ -26,7 +27,7 @@ import Common.Table_Task;
 import Common.TimeDate;
 import Model.task_spacetime_lib;
 import Model.task_tracepegging_lib;
-import datamanage.AnalysizeDataCache;
+import datamanage.AnalysizeDataCacheManager;
 import domain.NumsAndMacCount;
 import jsonparse.QueryJsonParse;
 import probd.hbase.common.MyLog;
@@ -51,6 +52,7 @@ public class queryTaskresult extends baseServlet {
     
 	@Override
 	public String handle() {
+		MyLog.AddLog("actual_data_analyzer.log", "step===start to handle======");
 		taskid=getObject("taskid");	
 		mac=getObject("mac");	
 		type=getObject("type");	
@@ -58,13 +60,21 @@ public class queryTaskresult extends baseServlet {
 		limit=getObject("limit");	
 		conditionnum=getObject("conditionnum");	
 		ENDRESULT="{\"total\":\""+total+"\",\"data\":[]}";
-		if(init())	ENDRESULT=getResult();		
+		MyLog.AddLog("actual_data_analyzer.log", "step===handle-taskid======"+taskid);
+
+		if(init()){
+			MyLog.AddLog("actual_data_analyzer.log", "step===getResult======");
+			ENDRESULT=getResult();		
+		}
 		return ENDRESULT;		
 	}
 	
 	public boolean init(){
-		if(!TimeDate.isnum(taskid)) return false;
-		else TASKID=Long.parseLong(taskid);	
+		if(!timeop.isNumeric(taskid)){
+			return false;
+		}else{
+			TASKID=Long.parseLong(taskid);	
+		}
 		if(StringUtils.isEmpty(type)) return false;
         if(TimeDate.isnum(page)) pageno=Integer.parseInt(page);
 		if(TimeDate.isnum(limit)) pagesize=Integer.parseInt(limit);
@@ -130,7 +140,7 @@ public class queryTaskresult extends baseServlet {
 	private String getTraceFromCache() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTraceFromCache");
 		String data = null;
-		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
+		ArrayList<libObject> list = AnalysizeDataCacheManager.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
 			sortList(list,"etime");
 			data = getTraceData(list);
@@ -144,7 +154,7 @@ public class queryTaskresult extends baseServlet {
 		case "trace_pegging":
 			data = getTraceFromTracePegging(list);
 			break;
-		case "SpaceTime":
+		case "spacetime":
 			data = getTraceFromSpaceTime(list);
 			break;
 		default:
@@ -238,7 +248,7 @@ public class queryTaskresult extends baseServlet {
 	private String getMacFromCache(String columnname) {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromCache");
 		String data = null;
-		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
+		ArrayList<libObject> list = AnalysizeDataCacheManager.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
 			sortList(list,"nums");
 			data = getMacData(columnname,list);
@@ -252,7 +262,7 @@ public class queryTaskresult extends baseServlet {
 		case "trace_pegging":
 			data = getMacFromTracePegging(list,columnname);
 			break;
-		case "SpaceTime":
+		case "spacetime":
 			data = getMacFromSpaceTime(list,columnname);
 			break;
 		default:
@@ -336,7 +346,7 @@ public class queryTaskresult extends baseServlet {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromTracePegging");
 		MyLog.AddLog("actual_data_analyzer.log", "step===pageno==="+pageno+"===pagesize" +pagesize);
 		String result = "";
-		if(mac==null || mac.length()==0){
+		if(StringUtils.isEmpty(mac)){
 			boolean hasConditionNum = StringUtils.isNotEmpty(conditionnum);
 			MyLog.AddLog("actual_data_analyzer.log", "step===getdistict mac");
 			//获取columnname对应的去重的mac数
@@ -405,6 +415,7 @@ public class queryTaskresult extends baseServlet {
 	}
 
 	private String getMacFromDB(String columnname) {
+		MyLog.AddLog("actual_data_analyzer.log", "step===getMacFromDB");
 		String str="";
 		String datastr="";
 		if(mac==null||mac.length()==0){
@@ -466,7 +477,7 @@ public class queryTaskresult extends baseServlet {
 	private String getNumsAndMacsFromCache() {
 		MyLog.AddLog("actual_data_analyzer.log", "step===getTotalCountNumsFromCache");
 		String data = null;
-		ArrayList<libObject> list = AnalysizeDataCache.getDataByTaskidAndTableName(taskid, tablename);
+		ArrayList<libObject> list = AnalysizeDataCacheManager.getDataByTaskidAndTableName(taskid, tablename);
 		if(list != null){
 			data = getNumsAndMacsData(tablename,list);
 		}
@@ -479,7 +490,7 @@ public class queryTaskresult extends baseServlet {
 		case "trace_pegging":
 			data = getNumsAndMacsFromTracePegging(list);
 			break;
-		case "SpaceTime":
+		case "spacetime":
 			data = getNumsAndMacsFromSpaceTime(list);
 			break;
 		}
@@ -684,7 +695,7 @@ public class queryTaskresult extends baseServlet {
 				
 			};
 			break;
-		case "SpaceTime":
+		case "spacetime":
 			comparator = new Comparator<libObject>(){
 				@Override
 				public int compare(libObject o1, libObject o2) {

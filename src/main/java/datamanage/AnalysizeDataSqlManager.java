@@ -95,7 +95,7 @@ public class AnalysizeDataSqlManager {
 		case "trace_pegging":
 			insertTracePegging(value);
 			break;
-		case "SpaceTime":
+		case "spacetime":
 			insertSpaceTime(value);
 			break;
 		default:
@@ -117,8 +117,8 @@ public class AnalysizeDataSqlManager {
 			int stime = Integer.valueOf(bean.getStime());
 			int etime = Integer.valueOf(bean.getEtime());
 			String lables = bean.getLables();
-			String sql = "insert into SpaceTime(taskid,mac,nums,svc,stime,etime,lables) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime+","+"\""+lables+"\""+")";
-			MyLog.AddLog("cache_to_mysql.log", "SpaceTime sql===" + sql);
+			String sql = "insert into spacetime(taskid,mac,nums,svc,stime,etime,lables) values("+taskid+","+"\""+mac+"\"" +","+nums+","+"\""+svc+"\"" +","+stime+","+etime+","+"\""+lables+"\""+")";
+			MyLog.AddLog("cache_to_mysql.log", "spacetime sql===" + sql);
 			mysqlObject sqlObj = new mysqlObject();
 			sqlObj.clearObject();
 			mysqlObject.ExeSql(sql);

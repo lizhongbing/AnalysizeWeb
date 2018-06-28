@@ -50,7 +50,6 @@ public class MyLog {
 	public static boolean GetLogBaseDir(){
 		if(logbasedir==null){
 			String hadoopconf=GetPathFromEnv("HADOOP_HOME");
-			System.out.println("hadoopconf === "+hadoopconf);								  
 			
 			if((hadoopconf==null)||(hadoopconf.isEmpty())){
 				logbasedir="";
@@ -59,9 +58,7 @@ public class MyLog {
 			hadoopconf+="/etc/hadoop/pro_loginfo.xml";
 			
 			logbasedir=GetConfMark(hadoopconf, Conf_Set_logpath);		
-			System.out.println("GetLogBaseDir:"+logbasedir+" hadoopconf: "+hadoopconf);
 		}
-		System.out.println("logbasedir === "+logbasedir);	
 		if(logbasedir.isEmpty())return false;
 		return true;
 	}

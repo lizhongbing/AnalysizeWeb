@@ -8,6 +8,9 @@ public class Constant {
 	//服务器数据库配置文件的路径
 	public static String SERVER_DB_PROPERTIES_PATH = "/data/db.properties";
 	
+	//实时分析结果数据存储位置
+	public static String ANALYSIZE_DATA_CACHE_PATH = "/home/apache-tomcat-7.0.68/webapps/data";
+	
 	//hadoop任务分析配置文件的路径
 	public static String HADOOP_TASKANALYZER_PATH = "/etc/hadoop/task-analyzer.xml";
 	
